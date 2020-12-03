@@ -1,31 +1,41 @@
 package dev.faustin0.bus.bot
 
+import java.util.concurrent.Executors
 import canoe.api.models.Keyboard
 import canoe.api.{ callbackQueryApi, chatApi, Bot, Scenario, TelegramClient }
 import canoe.models.ChatAction.Typing
 import canoe.models._
 import canoe.syntax.{ command, _ }
-import cats.effect.{ ExitCode, IO, IOApp }
+import cats.effect.{ ExitCode, IO, IOApp, Resource }
 import cats.implicits._
 import cats.{ Applicative, Monad }
 import dev.faustin0.bus.bot.models.BusInfoQuery
 import fs2.{ Pipe, Stream }
 
-object CallbackHandling extends IOApp {
-  val token: String = sys.env("TOKEN")
+import scala.concurrent.ExecutionContext
 
-  def run(args: List[String]): IO[ExitCode] =
-    Stream
-      .resource(TelegramClient.global[IO](token))
-      .flatMap { implicit client =>
-        Bot
-          .polling[IO]
-          .follow(echos, busStopQueries(new InMemoryBusInfoClient()))
-          .through(answerCallbacks)
+object CallbackHandling extends IOApp {
+  private val token = sys.env("TOKEN")
+  private val ec    = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
+
+  def run(args: List[String]): IO[ExitCode] = {
+    val telegramClient = Stream.resource(TelegramClient.global[IO](token))
+
+    Http4sBusInfoClient
+      .makeWithResource("http://bus-app.fware.net", ec)
+      .use { busClient =>
+        telegramClient
+          .flatMap(implicit client =>
+            Bot
+              .polling[IO]
+              .follow(echos, busStopQueries(busClient))
+              .through(answerCallbacks)
+          )
+          .compile
+          .drain
+          .as(ExitCode.Success)
       }
-      .compile
-      .drain
-      .as(ExitCode.Success)
+  }
 
   val inlineBtn = InlineKeyboardButton.callbackData(text = "button", cbd = "callback data")
 
@@ -38,19 +48,29 @@ object CallbackHandling extends IOApp {
       _   <- Scenario.eval(msg.chat.send(content = "pretty message", keyboard = keyboardMarkUp))
     } yield ()
 
-  def busStopQueries[F[_]: TelegramClient](busInfoClient: BusInfoClient[F]): Scenario[F, Unit] =
+  def busStopQueries[F[_]: TelegramClient: Monad](busInfoClient: BusInfoDSL[F]): Scenario[F, Unit] =
     for {
       rawQuery <- Scenario.expect(textMessage)
       chat      = rawQuery.chat
       _        <- Scenario.eval(chat.setAction(Typing))
       query     = BusInfoQuery.fromText(rawQuery.text)
-//      response  =
-//        query
-//          .fold(
-//            error => Scenario.pure(error.toString),
-//            msg => Scenario.eval(busInfoClient.getNextBuses())
-//          )
-      _        <- Scenario.eval(chat.send(s"matched a query $query"))
+      response  = query
+                    .fold(
+                      error => Monad[F].pure(error.toString),
+                      q =>
+                        for {
+                          buses <- busInfoClient.getNextBuses
+                          msg    = buses
+                                     .map(_.toString)
+                                     .reduceOption((s1: String, s2: String) => s1 + " " + s2)
+                                     .getOrElse("no bus stops")
+                        } yield msg
+                    )
+      x        <- Scenario.eval(response).attempt
+      _        <- x.fold(
+                    e => Scenario.eval(chat.send(e.toString)),
+                    msg => Scenario.eval(chat.send(msg))
+                  )
     } yield ()
 
   def answerCallbacks[F[_]: Monad: TelegramClient]: Pipe[F, Update, Update] =
