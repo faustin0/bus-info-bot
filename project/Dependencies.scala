@@ -20,6 +20,7 @@ object Dependencies {
     "org.http4s"        %% "http4s-circe"          % http4sVersion,
     "io.circe"          %% "circe-generic"         % circeVersion,
     "io.circe"          %% "circe-literal"         % circeVersion,
+    "io.chrisdavenport" %% "log4cats-core"         % log4catsVersion,
     "io.chrisdavenport" %% "log4cats-slf4j"        % log4catsVersion,
     "com.amazonaws"      % "aws-java-sdk-dynamodb" % dynamodbVersion,
     "org.augustjune"    %% "canoe"                 % canoeVersion,
@@ -28,10 +29,12 @@ object Dependencies {
   )
 
   lazy val testDependencies = Seq(
-    "org.scalatest"  %% "scalatest"                      % "3.2.3"                    % Test,
-    "com.dimafeng"   %% "testcontainers-scala-dynalite"  % testcontainersScalaVersion % Test,
-    "com.dimafeng"   %% "testcontainers-scala-scalatest" % testcontainersScalaVersion % Test,
-    "com.codecommit" %% "cats-effect-testing-scalatest"  % "0.4.2"                    % Test,
-    "org.typelevel"  %% "cats-effect-laws"               % catsVersion                % Test
+    "org.scalatest"  %% "scalatest"                       % "3.2.3"                    % Test,
+    "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion % Test,
+    "com.dimafeng"   %% "testcontainers-scala-mockserver" % testcontainersScalaVersion % Test,
+    "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
+    "org.mock-server" % "mockserver-client-java"          % "5.11.2"                   % Test,
+    "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.4.2"                    % Test,
+    "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
   )
 }
