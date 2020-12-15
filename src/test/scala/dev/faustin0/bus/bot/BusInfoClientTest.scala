@@ -3,6 +3,7 @@ package dev.faustin0.bus.bot
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.{ Blocker, IO, Resource }
 import com.dimafeng.testcontainers.{ ForAllTestContainer, MockServerContainer }
+import dev.faustin0.bus.bot.models._
 import io.circe.literal.JsonStringContext
 import org.http4s.Uri
 import org.http4s.client.{ Client, JavaNetClientBuilder }
@@ -27,9 +28,9 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
   }
 
   lazy val mockServerClient: Resource[IO, MockServerClient] = Resource
-    .fromAutoCloseable(
+    .make(
       IO(new MockServerClient(container.host, container.container.getServerPort))
-    )
+    )(client => IO(client.reset()))
 
   "should retrieve the next buses for a given stop" in {
 
@@ -66,9 +67,121 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       for {
         _        <- registerExpectation
         sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
-        response <- sut.getNextBuses
+        response <- sut.getNextBuses(NextBus("303", Some("28")))
       } yield response
-    }.asserting(responses => assert(responses.nonEmpty))
+    }.asserting {
+      case SuccessfulResponse(info) => assert(info.nonEmpty)
+      case _                        => fail()
+    }
+  }
+
+  "should get a MissingBusStop when bus stop does not exist" in {
+
+    mockServerClient.use { mock =>
+      val registerExpectation = IO(
+        mock
+          .when(
+            request()
+              .withPath("/bus-stops/2023")
+              .withMethod("GET")
+          )
+          .respond(
+            response()
+              .withStatusCode(404)
+              .withBody(
+                json"""
+                       {
+                       "msg": "2023 not handled"
+                       }
+                  """.noSpaces
+              )
+          )
+      )
+      for {
+        _        <- registerExpectation
+        sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
+        response <- sut.getNextBuses(NextBus("2023"))
+      } yield response
+    }.asserting {
+      case MissingBusStop() => succeed
+      case _                => fail()
+    }
+  }
+
+  "should get a GeneralFailure on malformed request" in {
+
+    mockServerClient.use { mock =>
+      val registerExpectation = IO(
+        mock
+          .when(
+            request()
+              .withPath("/bus-stops/2022")
+              .withMethod("GET")
+              .withQueryStringParameter("bus", "wrong")
+          )
+          .respond(
+            response()
+              .withStatusCode(400)
+              .withBody(
+                json"""
+                       {
+                         "msg": "bus not handled"
+                       }
+                  """.noSpaces
+              )
+          )
+      )
+      for {
+        _        <- registerExpectation
+        sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
+        response <- sut.getNextBuses(NextBus("2022", Some("wrong")))
+      } yield response
+    }.asserting {
+      case GeneralFailure() => succeed
+      case _                => fail()
+    }
+  }
+
+  "should get a bus info detailed response" in {
+
+    mockServerClient.use { mock =>
+      val registerExpectation = IO(
+        mock
+          .when(
+            request()
+              .withPath("/bus-stops/2022/info")
+              .withMethod("GET")
+          )
+          .respond(
+            response()
+              .withStatusCode(200)
+              .withBody(
+                json"""
+                    {
+                      "code": 2022,
+                      "name": "GIAMBOLOGNA",
+                      "location": "VIA MASSARENTI 456",
+                      "comune": "BOLOGNA",
+                      "areaCode": 500,
+                      "position": {
+                        "x": 689780,
+                        "y": 929630,
+                        "lat": 44.493282,
+                        "long": 11.38589
+                      }
+                    }
+                  """.noSpaces
+              )
+          )
+      )
+      for {
+        _        <- registerExpectation
+        sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
+        response <- sut.getBusStopInfo(BusStopInfo("2022"))
+      } yield response
+    }.asserting { case BusStopDetails(code, _, _, _, _, _) =>
+      assert(code == 2022)
+    }
   }
 
 }

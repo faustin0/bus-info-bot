@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  val http4sVersion              = "0.21.3" // do not update to "0.21.9" or else it breaks telegram api
+  val http4sVersion              = "0.21.13"
   val testcontainersScalaVersion = "0.38.6"
   val catsVersion                = "2.2.0"
   val kindProjectorV             = "0.11.0"
