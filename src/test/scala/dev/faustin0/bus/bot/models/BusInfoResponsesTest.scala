@@ -16,7 +16,7 @@ class BusInfoResponsesTest extends AnyFunSuite with Matchers {
         "busInfo": "(Bus5581 CON PEDANA)"
       }
     """
-    val actual      = BusInfoResponses.fromJson(jsonExample)
+    val actual      = BusInfo.fromJson(jsonExample)
 
     actual match {
       case Right(_) => succeed
@@ -25,7 +25,7 @@ class BusInfoResponsesTest extends AnyFunSuite with Matchers {
   }
 
   test("fail case should contain failed json") {
-    val actual = BusInfoResponses.fromJson("{bad-json}".asJson)
+    val actual = BusInfo.fromJson("{bad-json}".asJson)
 
     actual match {
       case Left(t)  => assert(t.getMessage.contains("{bad-json}"))

@@ -6,20 +6,45 @@ import cats.implicits._
 import io.circe._
 import io.circe.generic.semiauto._
 
-case class BusInfoResponse(
+sealed trait BusInfoResponse extends Product with Serializable
+
+final case class SuccessfulResponse(
+  info: List[BusInfo]
+) extends BusInfoResponse
+
+final case class GeneralFailure() extends BusInfoResponse
+final case class BadRequest()     extends BusInfoResponse
+final case class MissingBusStop() extends BusInfoResponse
+
+case class BusInfo(
   bus: String,
   satellite: Boolean,
   hour: LocalTime,
   busInfo: String
 )
 
-object BusInfoResponses {
+case class BusStopDetails(
+  code: Int,
+  name: String,
+  location: String,
+  comune: String,
+  areaCode: Int,
+  position: BusStopPosition
+)
 
-  implicit private val BusInfoResponseDecoder: Decoder[BusInfoResponse] =
-    deriveDecoder[BusInfoResponse]
+case class BusStopPosition(
+  x: Long,
+  y: Long,
+  lat: Float,
+  long: Float
+)
 
-  def fromJson(json: Json): Either[IllegalArgumentException, BusInfoResponse] = //TODO change exception
+object BusInfo { //todo rename
+
+  implicit private val BusInfoDecoder: Decoder[BusInfo] = deriveDecoder[BusInfo]
+
+  def fromJson(json: Json): Either[IllegalArgumentException, BusInfo] = //TODO change exception
     json
-      .as[BusInfoResponse]
+      .as[BusInfo]
       .leftMap(t => new IllegalArgumentException(s"failed to parse json: $json", t))
 }

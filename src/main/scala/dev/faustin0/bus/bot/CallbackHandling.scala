@@ -1,17 +1,19 @@
 package dev.faustin0.bus.bot
 
-import java.util.concurrent.Executors
 import canoe.api.models.Keyboard
 import canoe.api.{ callbackQueryApi, chatApi, Bot, Scenario, TelegramClient }
 import canoe.models.ChatAction.Typing
 import canoe.models._
 import canoe.syntax.{ command, _ }
-import cats.effect.{ ExitCode, IO, IOApp, Resource }
+import cats.effect.{ ContextShift, ExitCode, IO, IOApp, Timer }
 import cats.implicits._
 import cats.{ Applicative, Monad }
-import dev.faustin0.bus.bot.models.BusInfoQuery
+import dev.faustin0.bus.bot.models.{ BusInfoQuery, BusStopInfo, NextBus }
 import fs2.{ Pipe, Stream }
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import io.chrisdavenport.log4cats.{ Logger, SelfAwareLogger }
 
+import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
 
 object CallbackHandling extends IOApp {
@@ -22,20 +24,29 @@ object CallbackHandling extends IOApp {
     val telegramClient = Stream.resource(TelegramClient.global[IO](token))
 
     Http4sBusInfoClient
-      .makeWithResource("http://bus-app.fware.net", ec)
+      .makeResource("http://bus-app.fware.net/", ec)
       .use { busClient =>
-        telegramClient
-          .flatMap(implicit client =>
-            Bot
-              .polling[IO]
-              .follow(echos, busStopQueries(busClient))
-              .through(answerCallbacks)
-          )
-          .compile
-          .drain
-          .as(ExitCode.Success)
+        BotApplication.app(telegramClient, busClient)
       }
   }
+}
+
+object BotApplication {
+
+  def app(telegramClient: Stream[IO, TelegramClient[IO]], busClient: BusInfoDSL[IO])(implicit
+    cs: ContextShift[IO],
+    timer: Timer[IO]
+  ): IO[ExitCode] =
+    telegramClient
+      .flatMap(implicit client =>
+        Bot
+          .polling[IO]
+          .follow(echos, busStopQueries(busClient))
+          .through(answerCallbacks)
+      )
+      .compile
+      .drain
+      .as(ExitCode.Success)
 
   val inlineBtn = InlineKeyboardButton.callbackData(text = "button", cbd = "callback data")
 
@@ -59,11 +70,8 @@ object CallbackHandling extends IOApp {
                       error => Monad[F].pure(error.toString),
                       q =>
                         for {
-                          buses <- busInfoClient.getNextBuses
-                          msg    = buses
-                                     .map(_.toString)
-                                     .reduceOption((s1: String, s2: String) => s1 + " " + s2)
-                                     .getOrElse("no bus stops")
+                          buses <- busInfoClient.getNextBuses(NextBus("303"))
+                          msg    = buses.toString
                         } yield msg
                     )
       x        <- Scenario.eval(response).attempt
