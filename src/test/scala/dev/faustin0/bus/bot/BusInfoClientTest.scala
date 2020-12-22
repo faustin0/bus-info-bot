@@ -14,12 +14,9 @@ import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 import org.testcontainers.containers.wait.strategy.Wait
 
-import java.util.concurrent.Executors
-
 class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with AsyncIOSpec with Matchers {
 
-  val blockingPool           = Executors.newFixedThreadPool(4)
-  val blocker                = Blocker.liftExecutorService(blockingPool)
+  val blocker                = Blocker.liftExecutionContext(executionContext)
   val httpClient: Client[IO] = JavaNetClientBuilder[IO](blocker).create
 
   override val container: MockServerContainer = MockServerContainer("5.11.2").configure { c =>
@@ -27,8 +24,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       .waitingFor(Wait.forLogMessage(".*started on port:.*", 1))
   }
 
-  lazy val mockServerClient: Resource[IO, MockServerClient] = Resource
-    .make(
+  lazy val mockServerClient: Resource[IO, MockServerClient] =
+    Resource.make(
       IO(new MockServerClient(container.host, container.container.getServerPort))
     )(client => IO(client.reset()))
 
@@ -142,14 +139,15 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
     }
   }
 
-  "should get a bus info detailed response" in {
+  "should search a bus stop by name" in {
 
     mockServerClient.use { mock =>
       val registerExpectation = IO(
         mock
           .when(
             request()
-              .withPath("/bus-stops/2022/info")
+              .withPath("/bus-stops")
+              .withQueryStringParameter("name", "stazione centrale")
               .withMethod("GET")
           )
           .respond(
@@ -157,19 +155,34 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
               .withStatusCode(200)
               .withBody(
                 json"""
-                    {
-                      "code": 2022,
-                      "name": "GIAMBOLOGNA",
-                      "location": "VIA MASSARENTI 456",
-                      "comune": "BOLOGNA",
-                      "areaCode": 500,
-                      "position": {
-                        "x": 689780,
-                        "y": 929630,
-                        "lat": 44.493282,
-                        "long": 11.38589
-                      }
-                    }
+                    [
+                      {
+                        "code": 7,
+                        "name": "STAZIONE CENTRALE",
+                        "location": "PIAZZA MEDAGLIE D`ORO (PENSILINA D)",
+                        "comune": "BOLOGNA",
+                        "areaCode": 500,
+                        "position": {
+                          "x": 686322,
+                          "y": 930912,
+                          "lat": 44.505714,
+                          "long": 11.342895
+                          }
+                        },
+                        {
+                          "code": 471,
+                          "name": "STAZIONE CENTRALE",
+                          "location": "VIALE PIETRAMELLARA (PENSILINA L)",
+                          "comune": "BOLOGNA",
+                          "areaCode": 500,
+                          "position": {
+                            "x": 686462,
+                            "y": 930813,
+                            "lat": 44.504787,
+                            "long": 11.34462
+                            }
+                          }
+                      ]
                   """.noSpaces
               )
           )
@@ -177,10 +190,11 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       for {
         _        <- registerExpectation
         sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
-        response <- sut.getBusStopInfo(BusStopInfo("2022"))
+        response <- sut.searchBusStopByName(BusStopInfo("stazione centrale"))
       } yield response
-    }.asserting { case BusStopDetails(code, _, _, _, _, _) =>
-      assert(code == 2022)
+    }.asserting {
+      case ::(head, _) => assert(head.name == "STAZIONE CENTRALE")
+      case Nil         => fail("expected a list of bus stop")
     }
   }
 

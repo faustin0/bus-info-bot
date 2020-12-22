@@ -17,20 +17,22 @@ import scala.concurrent.duration.DurationInt
 
 trait BusInfoDSL[F[_]] {
   def getNextBuses(query: NextBus): F[BusInfoResponse]
-  def getBusStopInfo(query: BusStopInfo): F[BusStopDetails] //TODO handle missing bus-stop
+  def searchBusStopByName(query: BusStopInfo): F[List[BusStopDetails]]
 }
 
 class InMemoryBusInfoClient[F[_]: Applicative] extends BusInfoDSL[F] {
   override def getNextBuses(query: NextBus): F[BusInfoResponse] = Applicative[F].pure(SuccessfulResponse(Nil))
 
-  override def getBusStopInfo(query: BusStopInfo): F[BusStopDetails] = Applicative[F].pure(
-    BusStopDetails(
-      code = 303,
-      name = "stop name",
-      location = "stop location",
-      comune = "comune",
-      areaCode = 500,
-      position = BusStopPosition(x = 1, y = 2, lat = 1.2f, long = 1.1f)
+  override def searchBusStopByName(query: BusStopInfo): F[List[BusStopDetails]] = Applicative[F].pure(
+    List(
+      BusStopDetails(
+        code = 303,
+        name = "stop name",
+        location = "stop location",
+        comune = "comune",
+        areaCode = 500,
+        position = BusStopPosition(x = 1, y = 2, lat = 1.2f, long = 1.1f)
+      )
     )
   )
 }
@@ -62,10 +64,10 @@ class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) e
     }
   }
 
-  override def getBusStopInfo(query: BusStopInfo): F[BusStopDetails] = {
+  override def searchBusStopByName(query: BusStopInfo): F[List[BusStopDetails]] = {
     val req = Request[F](
       method = GET,
-      uri = uri / "bus-stops" / query.stop / "info",
+      uri = (uri / "bus-stops").withQueryParam("name", query.stop),
       headers = Headers.of(
         Accept(MediaType.application.json)
       )
