@@ -1,10 +1,10 @@
 package dev.faustin0.bus.bot.models
 
-import java.time.LocalTime
-
 import cats.implicits._
 import io.circe._
 import io.circe.generic.semiauto._
+
+import java.time.LocalTime
 
 sealed trait BusInfoResponse extends Product with Serializable
 
@@ -39,7 +39,7 @@ case class BusStopPosition(
   long: Float
 )
 
-object BusInfo { //todo rename
+object BusInfoResponse {
 
   implicit private val BusInfoDecoder: Decoder[BusInfo] = deriveDecoder[BusInfo]
 
