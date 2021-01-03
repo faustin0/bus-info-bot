@@ -1,9 +1,9 @@
 package dev.faustin0.bus.bot.models
 
+import cats.implicits._
+
 import java.time.LocalTime
 import java.time.format.{ DateTimeFormatter, DateTimeFormatterBuilder }
-
-import cats.implicits._
 
 sealed trait BusInfoQuery extends Product with Serializable
 
@@ -13,7 +13,8 @@ final case class NextBus(
   hour: Option[LocalTime] = None
 ) extends BusInfoQuery
 
-final case class BusStopInfo(stop: String) extends BusInfoQuery
+final case class BusStopInfo(stop: String)       extends BusInfoQuery
+final case class Malformed(exception: Throwable) extends BusInfoQuery
 
 case object BusInfoQuery {
   private val spaces      = " +".r
@@ -25,9 +26,9 @@ case object BusInfoQuery {
     .appendOptional(DateTimeFormatter.ofPattern("HH:mm"))
     .toFormatter
 
-  def fromText(textMessage: String): Either[Throwable, BusInfoQuery] =
+  def fromText(textMessage: String): BusInfoQuery =
     textMessage match {
-      case busStopName(text) => Right(BusStopInfo(text))
+      case busStopName(text) => BusStopInfo(text)
       case query             =>
         tokenize(query) match {
           case stop :: bus :: rawTime :: Nil =>
@@ -39,12 +40,10 @@ case object BusInfoQuery {
                   hour = Option(time)
                 )
               )
-          case stop :: bus :: Nil            => Right(NextBus(stop, Option(bus)))
-          case stop :: Nil                   => Right(NextBus(stop))
-          case _                             =>
-            Left(
-              new IllegalArgumentException(s"cant extract query from '$textMessage'")
-            ) //TODO use ADT
+              .fold(ex => Malformed(ex), n => n)
+          case stop :: bus :: Nil            => NextBus(stop, Option(bus))
+          case stop :: Nil                   => NextBus(stop)
+          case _                             => Malformed(new IllegalArgumentException(s"cant extract query from '$textMessage'"))
         }
     }
 

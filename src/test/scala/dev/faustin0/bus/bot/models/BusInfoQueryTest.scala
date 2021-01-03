@@ -23,7 +23,7 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
 
       val query = BusInfoQuery.fromText(text)
 
-      assert(query === Right(expected))
+      assert(query === expected)
 
     }
   }
@@ -42,9 +42,7 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
 
       val query = BusInfoQuery.fromText(text)
 
-      inside(query) { case Right(NextBus(_, Some(_), None)) =>
-        succeed
-      }
+      inside(query) { case NextBus(_, Some(_), None) => succeed }
     }
   }
 
@@ -54,7 +52,7 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
 
     val query = BusInfoQuery.fromText(textMsg)
 
-    assert(query === Right(expected))
+    assert(query === expected)
 
   }
 
@@ -64,7 +62,7 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
 
     val query = BusInfoQuery.fromText(textMsg)
 
-    assert(query === Right(expected))
+    assert(query === expected)
 
   }
 }
