@@ -2,26 +2,27 @@ package dev.faustin0.bus.bot
 
 import cats.Applicative
 import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, IO, Resource, Sync }
-import dev.faustin0.bus.bot.models.{ BusStopPosition, _ }
+import dev.faustin0.bus.bot.models._
 import io.circe.generic.auto._
 import org.http4s.Method.GET
+import org.http4s._
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.client.middleware.{ Logger => ClientLogger }
 import org.http4s.client.{ Client, JavaNetClientBuilder }
 import org.http4s.headers.{ `Content-Type`, Accept }
-import org.http4s._
 
+import java.time.LocalTime
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 
 trait BusInfoDSL[F[_]] {
-  def getNextBuses(query: NextBus): F[BusInfoResponse]
+  def getNextBuses(query: NextBusQuery): F[BusInfoResponse]
   def searchBusStopByName(query: BusStopInfo): F[List[BusStopDetails]]
 }
 
 class InMemoryBusInfoClient[F[_]: Applicative] extends BusInfoDSL[F] {
-  override def getNextBuses(query: NextBus): F[BusInfoResponse] = Applicative[F].pure(SuccessfulResponse(Nil))
+  override def getNextBuses(query: NextBusQuery): F[BusInfoResponse] = Applicative[F].pure(SuccessfulResponse(Nil))
 
   override def searchBusStopByName(query: BusStopInfo): F[List[BusStopDetails]] = Applicative[F].pure(
     List(
@@ -39,7 +40,7 @@ class InMemoryBusInfoClient[F[_]: Applicative] extends BusInfoDSL[F] {
 
 class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) extends BusInfoDSL[F] {
 
-  override def getNextBuses(query: NextBus): F[BusInfoResponse] = {
+  override def getNextBuses(query: NextBusQuery): F[BusInfoResponse] = {
     val req = Request[F](
       method = GET,
       uri = (uri / "bus-stops" / query.stop)
@@ -56,6 +57,12 @@ class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) e
         case Status.Ok       =>
           resp
             .attemptAs[List[BusInfo]]
+            .map(parsedResp =>
+              parsedResp.map {
+                case BusInfo(bus, true, h, i)  => NextBus(Bus(bus), Satellite(h), i)
+                case BusInfo(bus, false, h, i) => NextBus(Bus(bus), Planned(h), i)
+              }
+            )
             .map(parsedResp => SuccessfulResponse(parsedResp))
             .getOrElse(GeneralFailure())
         case Status.NotFound => Sync[F].pure(MissingBusStop())
@@ -75,6 +82,13 @@ class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) e
 
     client.fetchAs(req)
   }
+
+  private case class BusInfo(
+    bus: String,
+    satellite: Boolean,
+    hour: LocalTime,
+    busInfo: String
+  )
 
 }
 

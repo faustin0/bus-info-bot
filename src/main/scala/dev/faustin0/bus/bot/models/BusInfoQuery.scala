@@ -7,7 +7,7 @@ import java.time.format.{ DateTimeFormatter, DateTimeFormatterBuilder }
 
 sealed trait BusInfoQuery extends Product with Serializable
 
-final case class NextBus(
+final case class NextBusQuery( //TODO change name
   stop: String,
   bus: Option[String] = None,
   hour: Option[LocalTime] = None
@@ -34,15 +34,15 @@ case object BusInfoQuery {
           case stop :: bus :: rawTime :: Nil =>
             extractTimeFromText(rawTime)
               .map(time =>
-                NextBus(
+                NextBusQuery(
                   stop = stop,
                   bus = Option(bus).map(_.trim),
                   hour = Option(time)
                 )
               )
               .fold(ex => Malformed(ex), n => n)
-          case stop :: bus :: Nil            => NextBus(stop, Option(bus))
-          case stop :: Nil                   => NextBus(stop)
+          case stop :: bus :: Nil            => NextBusQuery(stop, Option(bus))
+          case stop :: Nil                   => NextBusQuery(stop)
           case _                             => Malformed(new IllegalArgumentException(s"cant extract query from '$textMessage'"))
         }
     }

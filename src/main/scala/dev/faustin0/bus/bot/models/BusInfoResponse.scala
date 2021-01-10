@@ -1,35 +1,38 @@
 package dev.faustin0.bus.bot.models
 
-import cats.implicits._
-import io.circe._
-import io.circe.generic.semiauto._
-
 import java.time.LocalTime
 
-sealed trait BusInfoResponse extends Product with Serializable
+case class Bus(code: String) extends AnyVal
+
+sealed trait BusInfoResponse extends Product with Serializable {}
 
 final case class SuccessfulResponse(
-  info: List[BusInfo]
-) extends BusInfoResponse
+  info: List[NextBus]
+) extends BusInfoResponse {}
 
-final case class GeneralFailure() extends BusInfoResponse
-final case class BadRequest()     extends BusInfoResponse
-final case class MissingBusStop() extends BusInfoResponse
+final case class GeneralFailure() extends BusInfoResponse {}
 
-case class BusInfo(
-  bus: String,
-  satellite: Boolean,
-  hour: LocalTime,
-  busInfo: String
-)
+final case class BadRequest() extends BusInfoResponse {}
 
-case class BusStopDetails(
+final case class MissingBusStop() extends BusInfoResponse {}
+
+final case class BusStopDetails(
   code: Int,
   name: String,
   location: String,
   comune: String,
   areaCode: Int,
   position: BusStopPosition
+) extends BusInfoResponse {}
+
+sealed trait HourOfArrival
+final case class Satellite(hour: LocalTime) extends HourOfArrival
+final case class Planned(hour: LocalTime)   extends HourOfArrival
+
+case class NextBus(
+  bus: Bus,
+  hourOfArrival: HourOfArrival,
+  additionalInfo: String
 )
 
 case class BusStopPosition(
@@ -41,10 +44,13 @@ case class BusStopPosition(
 
 object BusInfoResponse {
 
-  implicit private val BusInfoDecoder: Decoder[BusInfo] = deriveDecoder[BusInfo]
+  implicit class CanoeAdapter[B <: BusInfoResponse](val b: B) extends AnyVal {
 
-  def fromJson(json: Json): Either[IllegalArgumentException, BusInfo] = //TODO change exception
-    json
-      .as[BusInfo]
-      .leftMap(t => new IllegalArgumentException(s"failed to parse json: $json", t))
+    def toCanoeMessage(implicit M: CanoeMessage[B]): CanoeMessageData =
+      CanoeMessageData(
+        body = M.body(b),
+        keyboard = M.keyboard("???") //todo
+      )
+  }
+
 }

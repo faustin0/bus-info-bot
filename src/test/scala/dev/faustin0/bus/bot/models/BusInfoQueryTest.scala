@@ -19,7 +19,7 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
 
   forAll(fullQueries) { (text: String) =>
     test(s"should extract a full query from a text message $text") {
-      val expected = NextBus("303", Some("24"), Some(LocalTime.of(14, 30)))
+      val expected = NextBusQuery("303", Some("24"), Some(LocalTime.of(14, 30)))
 
       val query = BusInfoQuery.fromText(text)
 
@@ -42,13 +42,13 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
 
       val query = BusInfoQuery.fromText(text)
 
-      inside(query) { case NextBus(_, Some(_), None) => succeed }
+      inside(query) { case NextBusQuery(_, Some(_), None) => succeed }
     }
   }
 
   test("should extract a partial query from a text message with missing bus and hour") {
     val textMsg  = "303"
-    val expected = NextBus("303", None, None)
+    val expected = NextBusQuery("303", None, None)
 
     val query = BusInfoQuery.fromText(textMsg)
 
