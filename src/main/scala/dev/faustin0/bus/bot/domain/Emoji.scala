@@ -1,4 +1,4 @@
-package dev.faustin0.bus.bot.models
+package dev.faustin0.bus.bot.domain
 
 object Emoji {
   val BUS      = "\uD83D\uDE8C"

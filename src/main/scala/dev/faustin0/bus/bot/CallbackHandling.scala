@@ -7,9 +7,10 @@ import canoe.syntax._
 import cats.effect.{ ContextShift, ExitCode, IO, IOApp, Timer }
 import cats.implicits._
 import cats.{ Applicative, Monad }
-import dev.faustin0.bus.bot.models.BusInfoResponse.CanoeAdapter
-import dev.faustin0.bus.bot.models.CanoeMessageFormats._
-import dev.faustin0.bus.bot.models._
+import dev.faustin0.bus.bot.infrastructure.Http4sBusInfoClient
+import dev.faustin0.bus.bot.domain.BusInfoResponse.CanoeAdapter
+import dev.faustin0.bus.bot.domain.CanoeMessageFormats._
+import dev.faustin0.bus.bot.domain._
 import fs2.{ Pipe, Stream }
 
 import java.util.concurrent.Executors
@@ -32,7 +33,7 @@ object CallbackHandling extends IOApp {
 
 object BotApplication {
 
-  def app(telegramClient: Stream[IO, TelegramClient[IO]], busClient: BusInfoDSL[IO])(implicit
+  def app(telegramClient: Stream[IO, TelegramClient[IO]], busClient: BusInfoAlgebra[IO])(implicit
     cs: ContextShift[IO],
     timer: Timer[IO]
   ): IO[ExitCode] =
@@ -47,7 +48,7 @@ object BotApplication {
       .drain
       .as(ExitCode.Success)
 
-  def busStopQueries[F[_]: TelegramClient: Monad](busInfoClient: BusInfoDSL[F]): Scenario[F, Unit] =
+  def busStopQueries[F[_]: TelegramClient: Monad](busInfoClient: BusInfoAlgebra[F]): Scenario[F, Unit] =
     for {
       rawQuery <- Scenario.expect(textMessage)
       chat      = rawQuery.chat

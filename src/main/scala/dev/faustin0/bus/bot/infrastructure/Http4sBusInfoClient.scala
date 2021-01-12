@@ -1,9 +1,10 @@
-package dev.faustin0.bus.bot
+package dev.faustin0.bus.bot.infrastructure
 
-import cats.Applicative
 import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, IO, Resource, Sync }
-import dev.faustin0.bus.bot.models._
+import dev.faustin0.bus.bot.domain._
+import io.circe.Decoder
 import io.circe.generic.auto._
+import io.circe.generic.semiauto.deriveDecoder
 import org.http4s.Method.GET
 import org.http4s._
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
@@ -16,29 +17,7 @@ import java.time.LocalTime
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 
-trait BusInfoDSL[F[_]] {
-  def getNextBuses(query: NextBusQuery): F[BusInfoResponse]
-  def searchBusStopByName(query: BusStopInfo): F[List[BusStopDetails]]
-}
-
-class InMemoryBusInfoClient[F[_]: Applicative] extends BusInfoDSL[F] {
-  override def getNextBuses(query: NextBusQuery): F[BusInfoResponse] = Applicative[F].pure(SuccessfulResponse(Nil))
-
-  override def searchBusStopByName(query: BusStopInfo): F[List[BusStopDetails]] = Applicative[F].pure(
-    List(
-      BusStopDetails(
-        code = 303,
-        name = "stop name",
-        location = "stop location",
-        comune = "comune",
-        areaCode = 500,
-        position = BusStopPosition(x = 1, y = 2, lat = 1.2f, long = 1.1f)
-      )
-    )
-  )
-}
-
-class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) extends BusInfoDSL[F] {
+class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) extends BusInfoAlgebra[F] {
 
   override def getNextBuses(query: NextBusQuery): F[BusInfoResponse] = {
     val req = Request[F](
@@ -56,11 +35,11 @@ class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) e
       resp.status match {
         case Status.Ok       =>
           resp
-            .attemptAs[List[BusInfo]]
+            .attemptAs[List[BusInfoJson]]
             .map(parsedResp =>
               parsedResp.map {
-                case BusInfo(bus, true, h, i)  => NextBus(Bus(bus), Satellite(h), i)
-                case BusInfo(bus, false, h, i) => NextBus(Bus(bus), Planned(h), i)
+                case BusInfoJson(bus, true, h, i)  => NextBus(Bus(bus), Satellite(h), i)
+                case BusInfoJson(bus, false, h, i) => NextBus(Bus(bus), Planned(h), i)
               }
             )
             .map(parsedResp => SuccessfulResponse(parsedResp))
@@ -83,16 +62,18 @@ class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) e
     client.fetchAs(req)
   }
 
-  private case class BusInfo(
-    bus: String,
-    satellite: Boolean,
-    hour: LocalTime,
-    busInfo: String
-  )
-
 }
 
+private case class BusInfoJson(
+  bus: String,
+  satellite: Boolean,
+  hour: LocalTime,
+  busInfo: String
+)
+
 object Http4sBusInfoClient {
+
+  implicit private val BusInfoJsonDecoder: Decoder[BusInfoJson] = deriveDecoder[BusInfoJson]
 
   def apply(httpClient: Client[IO], uri: Uri): Http4sBusInfoClient[IO] = new Http4sBusInfoClient(httpClient, uri)
 

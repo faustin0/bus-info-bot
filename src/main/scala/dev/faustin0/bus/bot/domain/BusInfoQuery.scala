@@ -1,4 +1,4 @@
-package dev.faustin0.bus.bot.models
+package dev.faustin0.bus.bot.domain
 
 import cats.implicits._
 

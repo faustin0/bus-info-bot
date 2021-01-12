@@ -1,8 +1,8 @@
-package dev.faustin0.bus.bot.models
+package dev.faustin0.bus.bot.domain
 
 import canoe.api.models.Keyboard
 import canoe.models.{ InlineKeyboardButton, InlineKeyboardMarkup }
-import dev.faustin0.bus.bot.models.Emoji.{ BUS, BUS_STOP, CLOCK, WARN }
+import dev.faustin0.bus.bot.domain.Emoji.{ BUS, BUS_STOP, CLOCK, WARN }
 
 case class CanoeMessageData(
   body: String,

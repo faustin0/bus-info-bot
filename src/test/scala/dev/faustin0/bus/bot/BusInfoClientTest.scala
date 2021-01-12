@@ -3,7 +3,8 @@ package dev.faustin0.bus.bot
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.{ Blocker, IO, Resource }
 import com.dimafeng.testcontainers.{ ForAllTestContainer, MockServerContainer }
-import dev.faustin0.bus.bot.models._
+import dev.faustin0.bus.bot.infrastructure.Http4sBusInfoClient
+import dev.faustin0.bus.bot.domain._
 import io.circe.literal.JsonStringContext
 import org.http4s.Uri
 import org.http4s.client.{ Client, JavaNetClientBuilder }
