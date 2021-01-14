@@ -1,13 +1,9 @@
-package dev.faustin0.bus.bot.domain
+package dev.faustin0.bus.bot.infrastructure
 
 import canoe.api.models.Keyboard
 import canoe.models.{ InlineKeyboardButton, InlineKeyboardMarkup }
 import dev.faustin0.bus.bot.domain.Emoji.{ BUS, BUS_STOP, CLOCK, WARN }
-
-case class CanoeMessageData(
-  body: String,
-  keyboard: Keyboard = Keyboard.Unchanged
-)
+import dev.faustin0.bus.bot.domain._
 
 trait CanoeMessage[M] {
   def keyboard(callbackData: String): Keyboard
@@ -21,7 +17,7 @@ object CanoeMessageFormats {
     override def body(a: SuccessfulResponse): String = a.info.map { i =>
       s"""
          |$BUS_STOP todo
-         |$BUS ${i.bus}
+         |$BUS ${i.bus.code}
          |$CLOCK ${i.hourOfArrival match {
         case Satellite(hour) => hour
         case Planned(hour)   => s"$WARN previsto: $hour"

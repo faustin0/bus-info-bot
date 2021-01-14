@@ -7,10 +7,11 @@ import canoe.syntax._
 import cats.effect.{ ContextShift, ExitCode, IO, IOApp, Timer }
 import cats.implicits._
 import cats.{ Applicative, Monad }
-import dev.faustin0.bus.bot.infrastructure.Http4sBusInfoClient
-import dev.faustin0.bus.bot.domain.BusInfoResponse.CanoeAdapter
-import dev.faustin0.bus.bot.domain.CanoeMessageFormats._
+import dev.faustin0.bus.bot.domain.Encoders._
 import dev.faustin0.bus.bot.domain._
+import dev.faustin0.bus.bot.infrastructure.CanoeMessageAdapter._
+import dev.faustin0.bus.bot.infrastructure.CanoeMessageFormats._
+import dev.faustin0.bus.bot.infrastructure.{ CanoeMessageData, Http4sBusInfoClient }
 import fs2.{ Pipe, Stream }
 
 import java.util.concurrent.Executors
@@ -58,7 +59,7 @@ object BotApplication {
                     case q: NextBusQuery =>
                       for {
                         resp <- busInfoClient.getNextBuses(q).map {
-                                  case r: SuccessfulResponse => r.toCanoeMessage
+                                  case r: SuccessfulResponse => r.toCanoeMessage(q)
                                   case r: GeneralFailure     => r.toCanoeMessage
                                   case r: BadRequest         => r.toCanoeMessage
                                   case r: MissingBusStop     => r.toCanoeMessage

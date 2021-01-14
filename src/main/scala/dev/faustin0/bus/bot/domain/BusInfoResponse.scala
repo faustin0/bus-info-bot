@@ -2,7 +2,11 @@ package dev.faustin0.bus.bot.domain
 
 import java.time.LocalTime
 
-case class Bus(code: String) extends AnyVal
+final case class Bus(code: String) extends AnyVal
+
+sealed trait HourOfArrival
+final case class Satellite(hour: LocalTime) extends HourOfArrival
+final case class Planned(hour: LocalTime)   extends HourOfArrival
 
 sealed trait BusInfoResponse extends Product with Serializable {}
 
@@ -25,10 +29,6 @@ final case class BusStopDetails(
   position: BusStopPosition
 ) extends BusInfoResponse {}
 
-sealed trait HourOfArrival
-final case class Satellite(hour: LocalTime) extends HourOfArrival
-final case class Planned(hour: LocalTime)   extends HourOfArrival
-
 case class NextBus(
   bus: Bus,
   hourOfArrival: HourOfArrival,
@@ -41,16 +41,3 @@ case class BusStopPosition(
   lat: Float,
   long: Float
 )
-
-object BusInfoResponse {
-
-  implicit class CanoeAdapter[B <: BusInfoResponse](val b: B) extends AnyVal {
-
-    def toCanoeMessage(implicit M: CanoeMessage[B]): CanoeMessageData =
-      CanoeMessageData(
-        body = M.body(b),
-        keyboard = M.keyboard("???") //todo
-      )
-  }
-
-}
