@@ -2,7 +2,8 @@ package dev.faustin0.bus.bot.infrastructure
 
 import canoe.api.models.Keyboard
 import canoe.models.{ InlineKeyboardButton, InlineKeyboardMarkup }
-import dev.faustin0.bus.bot.domain.Emoji.{ BUS, BUS_STOP, CLOCK, WARN }
+import cats.Show
+import dev.faustin0.bus.bot.domain.Emoji._
 import dev.faustin0.bus.bot.domain._
 
 trait CanoeMessage[M] {
@@ -14,16 +15,23 @@ object CanoeMessageFormats {
 
   implicit object SuccessMessage extends CanoeMessage[SuccessfulResponse] {
 
-    override def body(a: SuccessfulResponse): String = a.info.map { i =>
-      s"""
-         |$BUS_STOP todo
-         |$BUS ${i.bus.code}
-         |$CLOCK ${i.hourOfArrival match {
-        case Satellite(hour) => hour
-        case Planned(hour)   => s"$WARN previsto: $hour"
-      }}
-         |""".stripMargin
-    }.mkString(System.lineSeparator())
+    override def body(a: SuccessfulResponse): String = a.info.map { nb =>
+      val msg = s"""|$BUS_STOP ${nb.busStop.code}
+                    |$BUS ${nb.bus.code}
+                    |$CLOCK ${nb.hourOfArrival.hour}
+                    |${nb.hourOfArrival match {
+        case Satellite(_) => s"$SATELLITE Orario da satellite"
+        case Planned(_)   => s"$WARN Bus con orario previsto"
+      }}""".stripMargin
+      nb.additionalInfo
+        .map(info => s"$INFO $info")
+        .map(info => s"""|$msg
+                         |$info
+                         |""".stripMargin)
+        .getOrElse(msg)
+    }
+      .map(_.trim)
+      .mkString(System.lineSeparator())
 
     override def keyboard(callbackData: String): Keyboard = {
       val button = InlineKeyboardButton.callbackData(text = "update", cbd = callbackData)
