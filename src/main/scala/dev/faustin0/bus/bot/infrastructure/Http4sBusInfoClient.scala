@@ -4,7 +4,6 @@ import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, IO, Resource, Sync
 import dev.faustin0.bus.bot.domain._
 import dev.faustin0.bus.bot.infrastructure.JsonSchema.{ BusInfoJson, BusStopDetailsJson }
 import io.circe.Decoder
-import io.circe.generic.auto._
 import io.circe.generic.semiauto.deriveDecoder
 import org.http4s.Method.GET
 import org.http4s._
@@ -18,7 +17,7 @@ import java.time.LocalTime
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 
-class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) extends BusInfoAlgebra[F] {
+class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) extends BusInfoApi[F] {
 
   override def getNextBuses(query: NextBusQuery): F[Either[FailedRequest, NextBusResponse]] = {
     val req = Request[F](

@@ -3,7 +3,7 @@ package dev.faustin0.bus.bot.infrastructure
 import cats.Applicative
 import dev.faustin0.bus.bot.domain._
 
-class InMemoryBusInfoClient[F[_]: Applicative] extends BusInfoAlgebra[F] {
+class InMemoryBusInfoClient[F[_]: Applicative] extends BusInfoApi[F] {
 
   override def getNextBuses(query: NextBusQuery): F[Either[FailedRequest, NextBusResponse]] =
     Applicative[F].pure(Right(NextBusResponse(Nil)))
