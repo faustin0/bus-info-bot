@@ -68,8 +68,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
         response <- sut.getNextBuses(NextBusQuery("303", Some("28")))
       } yield response
     }.asserting {
-      case SuccessfulResponse(info) => assert(info.nonEmpty)
-      case _                        => fail()
+      case Right(NextBusResponse(info)) => assert(info.nonEmpty)
+      case _                            => fail()
     }
   }
 
@@ -101,12 +101,12 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
         response <- sut.getNextBuses(NextBusQuery("2023"))
       } yield response
     }.asserting {
-      case MissingBusStop() => succeed
-      case _                => fail()
+      case Left(MissingBusStop()) => succeed
+      case _                      => fail()
     }
   }
 
-  "should get a GeneralFailure on malformed request" in {
+  "should get a BadRequest on malformed request" in {
 
     mockServerClient.use { mock =>
       val registerExpectation = IO(
@@ -135,8 +135,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
         response <- sut.getNextBuses(NextBusQuery("2022", Some("wrong")))
       } yield response
     }.asserting {
-      case GeneralFailure() => succeed
-      case _                => fail()
+      case Left(BadRequest()) => succeed
+      case _                  => fail()
     }
   }
 
@@ -194,8 +194,9 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
         response <- sut.searchBusStopByName(BusStopInfo("stazione centrale"))
       } yield response
     }.asserting {
-      case ::(head, _) => assert(head.name == "STAZIONE CENTRALE")
-      case Nil         => fail("expected a list of bus stop")
+      case Right(BusStopDetailsResponse(::(head, _))) => assert(head.name == "STAZIONE CENTRALE")
+      case Right(BusStopDetailsResponse(Nil))         => fail("expected a list of bus stop")
+      case _                                          => fail()
     }
   }
 

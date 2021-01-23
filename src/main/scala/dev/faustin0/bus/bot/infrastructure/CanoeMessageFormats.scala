@@ -2,7 +2,6 @@ package dev.faustin0.bus.bot.infrastructure
 
 import canoe.api.models.Keyboard
 import canoe.models.{ InlineKeyboardButton, InlineKeyboardMarkup }
-import cats.Show
 import dev.faustin0.bus.bot.domain.Emoji._
 import dev.faustin0.bus.bot.domain._
 
@@ -13,9 +12,9 @@ trait CanoeMessage[M] {
 
 object CanoeMessageFormats {
 
-  implicit object SuccessMessage extends CanoeMessage[SuccessfulResponse] {
+  implicit object NextBusMessage extends CanoeMessage[NextBusResponse] {
 
-    override def body(a: SuccessfulResponse): String = a.info.map { nb =>
+    override def body(a: NextBusResponse): String = a.info.map { nb =>
       val msg = s"""|$BUS_STOP ${nb.busStop.code}
                     |$BUS ${nb.bus.code}
                     |$CLOCK ${nb.hourOfArrival.hour}
@@ -23,6 +22,7 @@ object CanoeMessageFormats {
         case Satellite(_) => s"$SATELLITE Orario da satellite"
         case Planned(_)   => s"$WARN Bus con orario previsto"
       }}""".stripMargin
+
       nb.additionalInfo
         .map(info => s"$INFO $info")
         .map(info => s"""|$msg
@@ -31,6 +31,7 @@ object CanoeMessageFormats {
         .getOrElse(msg)
     }
       .map(_.trim)
+      .map(s => s.concat(System.lineSeparator()))
       .mkString(System.lineSeparator())
 
     override def keyboard(callbackData: String): Keyboard = {

@@ -1,7 +1,6 @@
 package dev.faustin0.bus.bot.infrastructure
 
 import canoe.api.models.Keyboard
-import dev.faustin0.bus.bot.domain.BusInfoResponse
 import io.circe.Encoder
 import io.circe.literal.JsonStringContext
 import io.circe.syntax._
@@ -13,7 +12,7 @@ case class CanoeMessageData(
 
 object CanoeMessageAdapter {
 
-  implicit class CanoeAdapter[B <: BusInfoResponse](val b: B) extends AnyVal {
+  implicit class CanoeAdapter[B](val b: B) extends AnyVal {
 
     def toCanoeMessage[C](callbackData: C)(implicit M: CanoeMessage[B], E: Encoder[C]): CanoeMessageData =
       CanoeMessageData(

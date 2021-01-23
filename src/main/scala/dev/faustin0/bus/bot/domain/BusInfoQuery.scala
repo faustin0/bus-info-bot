@@ -10,7 +10,7 @@ import java.time.format.{ DateTimeFormatter, DateTimeFormatterBuilder }
 sealed trait BusInfoQuery extends Product with Serializable
 
 final case class NextBusQuery( //TODO change name
-  stop: String,
+  stop: String,                //fixme this should be a int
   bus: Option[String] = None,
   hour: Option[LocalTime] = None
 ) extends BusInfoQuery

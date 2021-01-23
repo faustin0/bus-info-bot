@@ -1,10 +1,11 @@
 package dev.faustin0.bus.bot
 
-import canoe.api.{ callbackQueryApi, chatApi, Bot, Scenario, TelegramClient }
+import canoe.api.models.Keyboard.Inline
+import canoe.api.{ callbackQueryApi, chatApi, messageApi, Bot, Scenario, TelegramClient }
 import canoe.models.ChatAction.Typing
 import canoe.models._
 import canoe.syntax._
-import cats.effect.{ ContextShift, ExitCode, IO, IOApp, Timer }
+import cats.effect.{ ContextShift, ExitCode, IO, IOApp, Sync, Timer }
 import cats.implicits._
 import cats.{ Applicative, Monad }
 import dev.faustin0.bus.bot.domain.Encoders._
@@ -13,6 +14,7 @@ import dev.faustin0.bus.bot.infrastructure.CanoeMessageAdapter._
 import dev.faustin0.bus.bot.infrastructure.CanoeMessageFormats._
 import dev.faustin0.bus.bot.infrastructure.{ CanoeMessageData, Http4sBusInfoClient }
 import fs2.{ Pipe, Stream }
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
 import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
@@ -33,6 +35,7 @@ object CallbackHandling extends IOApp {
 }
 
 object BotApplication {
+  implicit def logger[F[_]: Sync] = Slf4jLogger.getLogger[F] //FIXME "unsafe" logger
 
   def app(telegramClient: Stream[IO, TelegramClient[IO]], busClient: BusInfoAlgebra[IO])(implicit
     cs: ContextShift[IO],
@@ -47,34 +50,41 @@ object BotApplication {
       )
       .compile
       .drain
+//      .handleErrorWith(t => Logger[IO].error(t)("Failure running bot scenarios "))
       .as(ExitCode.Success)
 
   def busStopQueries[F[_]: TelegramClient: Monad](busInfoClient: BusInfoAlgebra[F]): Scenario[F, Unit] =
     for {
-      rawQuery <- Scenario.expect(textMessage)
-      chat      = rawQuery.chat
-      _        <- Scenario.eval(chat.setAction(Typing))
-      query     = BusInfoQuery.fromText(rawQuery.text)
-      response  = query match {
-                    case q: NextBusQuery =>
-                      for {
-                        resp <- busInfoClient.getNextBuses(q).map {
-                                  case r: SuccessfulResponse => r.toCanoeMessage(q)
-                                  case r: GeneralFailure     => r.toCanoeMessage
-                                  case r: BadRequest         => r.toCanoeMessage
-                                  case r: MissingBusStop     => r.toCanoeMessage
-                                  case r: BusStopDetails     => r.toCanoeMessage
-                                }
-                      } yield resp
-                    case q: BusStopInfo  => Monad[F].pure(CanoeMessageData(q.toString)) //todo
-                    case q: Malformed    => Monad[F].pure(CanoeMessageData(q.toString)) //todo
-                  }
+      rawQuery   <- Scenario.expect(textMessage)
+      chat        = rawQuery.chat
+      _          <- Scenario.eval(chat.setAction(Typing))
+      query       = BusInfoQuery.fromText(rawQuery.text)
+      waitingMsg <- Scenario.eval(chat.send(s"Richiesta $query"))
+      response    = query match {
+                      case q: NextBusQuery =>
+                        for {
+                          resp <- busInfoClient.getNextBuses(q)
+                          x     = resp.fold(
+                                    failure => CanoeMessageData(""),
+                                    success => CanoeMessageData("")
+                                  )
+                        } yield x
+                      case q: BusStopInfo  => Monad[F].pure(CanoeMessageData(q.toString)) //todo
+                      case q: Malformed    => Monad[F].pure(CanoeMessageData(q.toString)) //todo
+                    }
 
-      x <- Scenario.eval(response).attempt
-      _ <- x.fold(
-             e => Scenario.eval(chat.send(e.toString)),
-             msg => Scenario.eval(chat.send(msg.body, keyboard = msg.keyboard))
-           )
+      msg <- Scenario.eval(response).handleErrorWith { t =>
+               Scenario.pure(GeneralFailure().toCanoeMessage)
+             }
+      _   <- Scenario.eval {
+               for {
+                 _ <- waitingMsg.editText(msg.body)
+                 _ <- msg.keyboard match { //todo clean up this mess
+                        case Inline(markup) => waitingMsg.editReplyMarkup(Some(markup))
+                        case _              => Monad[F].pure(Left(false))
+                      }
+               } yield ()
+             }
     } yield ()
 
   def answerCallbacks[F[_]: Monad: TelegramClient]: Pipe[F, Update, Update] =

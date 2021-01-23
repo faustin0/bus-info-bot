@@ -2,33 +2,34 @@ package dev.faustin0.bus.bot.domain
 
 import java.time.LocalTime
 
-final case class Bus(code: String)     extends AnyVal
-final case class BusStop(code: String) extends AnyVal
+final case class Bus(code: String)  extends AnyVal
+final case class BusStop(code: Int) extends AnyVal
 
 sealed abstract class HourOfArrival(val hour: LocalTime)
 final case class Satellite(realTime: LocalTime) extends HourOfArrival(realTime)
 final case class Planned(prevision: LocalTime)  extends HourOfArrival(prevision)
 
-sealed trait BusInfoResponse extends Product with Serializable {}
+sealed trait FailedRequest        extends Product with Serializable
+final case class GeneralFailure() extends FailedRequest
+final case class BadRequest()     extends FailedRequest
+final case class MissingBusStop() extends FailedRequest
 
-final case class SuccessfulResponse(
+final case class NextBusResponse(
   info: List[NextBus]
-) extends BusInfoResponse {}
+)
 
-final case class GeneralFailure() extends BusInfoResponse {}
-
-final case class BadRequest() extends BusInfoResponse {}
-
-final case class MissingBusStop() extends BusInfoResponse {}
+final case class BusStopDetailsResponse(
+  busStops: List[BusStopDetails]
+)
 
 final case class BusStopDetails(
-  code: Int,
+  busStop: BusStop,
   name: String,
   location: String,
   comune: String,
   areaCode: Int,
   position: BusStopPosition
-) extends BusInfoResponse {}
+)
 
 case class NextBus(
   busStop: BusStop,
