@@ -46,12 +46,14 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
               json"""
                   [
                     {
+                      "busStopCode": 303,
                       "bus": "28",
                       "satellite": false,
                       "hour": "23:00",
                       "busInfo": ""
                     },
                     {
+                      "busStopCode": 303,
                       "bus": "28",
                       "satellite": false,
                       "hour": "23:20",

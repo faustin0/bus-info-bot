@@ -18,7 +18,7 @@ import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
 
-object CallbackHandling extends IOApp {
+object Application extends IOApp {
   private val token = sys.env("TOKEN")
   private val ec    = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 

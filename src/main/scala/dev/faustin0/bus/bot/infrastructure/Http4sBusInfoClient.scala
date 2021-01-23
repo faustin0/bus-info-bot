@@ -94,6 +94,7 @@ class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) e
 
 private object JsonSchema {
   implicit lazy val BusInfoDecoder: Decoder[BusInfoJson]               = deriveDecoder[BusInfoJson]
+  implicit lazy val PositionJsonDecoder: Decoder[PositionJson]         = deriveDecoder[PositionJson]
   implicit lazy val BusStopDetailsDecoder: Decoder[BusStopDetailsJson] = deriveDecoder[BusStopDetailsJson]
 
   case class BusInfoJson(
@@ -109,7 +110,7 @@ private object JsonSchema {
     location: String,
     comune: String,
     areaCode: Int,
-    position: BusStopPosition
+    position: PositionJson
   )
 
   case class PositionJson(
@@ -133,7 +134,7 @@ object Http4sBusInfoClient {
       .withRequestTimeout(7 seconds)
       .resource
       .map(client => ClientLogger(logHeaders = true, logBody = true)(client))
-      .map(client => new Http4sBusInfoClient(client, Uri.unsafeFromString(host)))
+      .map(client => Http4sBusInfoClient(client, Uri.unsafeFromString(host)))
 
   def make(
     host: String,
