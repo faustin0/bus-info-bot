@@ -1,7 +1,7 @@
 package dev.faustin0.bus.bot.infrastructure
 
 import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, IO, Resource, Sync }
-import dev.faustin0.bus.bot.domain._
+import dev.faustin0.bus.bot.domain.{ NextBusResponse, _ }
 import dev.faustin0.bus.bot.infrastructure.JsonSchema.{ BusInfoJson, BusStopDetailsJson }
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
@@ -36,17 +36,25 @@ class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) e
         case Status.Ok         =>
           resp
             .attemptAs[List[BusInfoJson]]
-            .map(parsedResp =>
-              parsedResp.map {
-                //todo, replace query.stop with information from json
-                case BusInfoJson(bus, true, h, i)  =>
-                  NextBus(BusStop(query.stop.toInt), Bus(bus), Satellite(h), i)
-                case BusInfoJson(bus, false, h, i) =>
-                  //todo, replace query.stop with information from json
-                  NextBus(BusStop(query.stop.toInt), Bus(bus), Planned(h), i)
-              }
-            )
-            .map(parsedResp => Right(NextBusResponse(parsedResp)))
+            .map {
+              case buses @ List(_, _*) =>
+                IncomingBuses(
+                  requestedStop = BusStop(query.stop.toInt),
+                  query.bus.map(Bus), //todo mina su toInt
+                  info = buses.map {
+                    case BusInfoJson(busStopCode, bus, true, h, i)  =>
+                      NextBus(BusStop(busStopCode), Bus(bus), Satellite(h), i)
+                    case BusInfoJson(busStopCode, bus, false, h, i) =>
+                      NextBus(BusStop(busStopCode), Bus(bus), Planned(h), i)
+                  }
+                )
+              case _                   =>
+                NoMoreBus(
+                  requestedStop = BusStop(query.stop.toInt), //todo mina su toInt
+                  requestedBus = query.bus.map(Bus)
+                )
+            }
+            .map(parsedResp => Right(parsedResp))
             .getOrElse(Left(GeneralFailure()))
         case Status.NotFound   => Sync[F].pure(Left(MissingBusStop()))
         case Status.BadRequest => Sync[F].pure(Left(BadRequest()))
@@ -98,6 +106,7 @@ private object JsonSchema {
   implicit lazy val BusStopDetailsDecoder: Decoder[BusStopDetailsJson] = deriveDecoder[BusStopDetailsJson]
 
   case class BusInfoJson(
+    busStopCode: Int,
     bus: String,
     satellite: Boolean,
     hour: LocalTime,

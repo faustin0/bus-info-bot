@@ -6,7 +6,7 @@ import dev.faustin0.bus.bot.domain._
 class InMemoryBusInfoClient[F[_]: Applicative] extends BusInfoApi[F] {
 
   override def getNextBuses(query: NextBusQuery): F[Either[FailedRequest, NextBusResponse]] =
-    Applicative[F].pure(Right(NextBusResponse(Nil)))
+    Applicative[F].pure(Right(NoMoreBus(BusStop(query.stop.toInt), query.bus.map(Bus))))
 
   override def searchBusStopByName(query: BusStopInfo): F[Either[FailedRequest, BusStopDetailsResponse]] =
     Applicative[F].pure(

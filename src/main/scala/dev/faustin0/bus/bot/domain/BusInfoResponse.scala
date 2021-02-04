@@ -5,18 +5,30 @@ import java.time.LocalTime
 final case class Bus(code: String)  extends AnyVal
 final case class BusStop(code: Int) extends AnyVal
 
-sealed abstract class HourOfArrival(val hour: LocalTime)
-final case class Satellite(realTime: LocalTime) extends HourOfArrival(realTime)
-final case class Planned(prevision: LocalTime)  extends HourOfArrival(prevision)
+sealed trait HourOfArrival { def hour: LocalTime }
+final case class Satellite(hour: LocalTime) extends HourOfArrival
+final case class Planned(hour: LocalTime)   extends HourOfArrival
 
 sealed trait FailedRequest        extends Product with Serializable
 final case class GeneralFailure() extends FailedRequest
 final case class BadRequest()     extends FailedRequest
 final case class MissingBusStop() extends FailedRequest
 
-final case class NextBusResponse(
+sealed trait NextBusResponse extends Product with Serializable {
+  def requestedStop: BusStop
+  def requestedBus: Option[Bus]
+}
+
+final case class IncomingBuses(
+  requestedStop: BusStop,
+  requestedBus: Option[Bus],
   info: List[NextBus]
-)
+) extends NextBusResponse
+
+final case class NoMoreBus(
+  requestedStop: BusStop,
+  requestedBus: Option[Bus]
+) extends NextBusResponse
 
 final case class BusStopDetailsResponse(
   busStops: List[BusStopDetails]

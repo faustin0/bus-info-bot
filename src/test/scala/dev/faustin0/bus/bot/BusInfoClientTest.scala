@@ -3,8 +3,8 @@ package dev.faustin0.bus.bot
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.{ Blocker, IO, Resource }
 import com.dimafeng.testcontainers.{ ForAllTestContainer, MockServerContainer }
-import dev.faustin0.bus.bot.infrastructure.Http4sBusInfoClient
 import dev.faustin0.bus.bot.domain._
+import dev.faustin0.bus.bot.infrastructure.Http4sBusInfoClient
 import io.circe.literal.JsonStringContext
 import org.http4s.Uri
 import org.http4s.client.{ Client, JavaNetClientBuilder }
@@ -14,6 +14,8 @@ import org.mockserver.model.HttpResponse.response
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 import org.testcontainers.containers.wait.strategy.Wait
+
+import scala.util.Right
 
 class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with AsyncIOSpec with Matchers {
 
@@ -48,7 +50,7 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
                     {
                       "busStopCode": 303,
                       "bus": "28",
-                      "satellite": false,
+                      "satellite": true,
                       "hour": "23:00",
                       "busInfo": ""
                     },
@@ -70,8 +72,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
         response <- sut.getNextBuses(NextBusQuery("303", Some("28")))
       } yield response
     }.asserting {
-      case Right(NextBusResponse(info)) => assert(info.nonEmpty)
-      case _                            => fail()
+      case Right(IncomingBuses(_, _, buses)) => assert(buses.nonEmpty)
+      case _                                 => fail()
     }
   }
 
@@ -140,6 +142,31 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       case Left(BadRequest()) => succeed
       case _                  => fail()
     }
+  }
+
+  "should get an empty NextBusResponse when no more bus for a given stop" in {
+
+    mockServerClient.use { mock =>
+      val registerExpectation = IO(
+        mock
+          .when(
+            request()
+              .withPath("/bus-stops/303")
+              .withMethod("GET")
+              .withQueryStringParameter("bus", "85")
+          )
+          .respond(
+            response()
+              .withStatusCode(200)
+              .withBody(json"[]".noSpaces)
+          )
+      )
+      for {
+        _        <- registerExpectation
+        sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
+        response <- sut.getNextBuses(NextBusQuery("303", Some("85")))
+      } yield response
+    }.asserting(resp => resp shouldBe Right(NoMoreBus(BusStop(303), Some(Bus("85")))))
   }
 
   "should search a bus stop by name" in {
