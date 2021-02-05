@@ -7,4 +7,5 @@ object Emoji {
   val WARN      = "\u26A0"       //⚠
   val SATELLITE = "\uD83D\uDEF0" //🛰
   val INFO      = "\u2139"       //ℹ️
+  val POINT     = "\uD83D\uDCCC" //📌
 }

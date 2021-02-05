@@ -62,6 +62,13 @@ object CanoeMessageFormats {
 
   implicit object DetailsMessage extends CanoeMessage[BusStopDetailsResponse] {
     override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
-    override def body(a: BusStopDetailsResponse): String  = a.toString //todo
+
+    override def body(a: BusStopDetailsResponse): String = a.busStops
+      .map(detail => s"""|$BUS_STOP ${detail.name} ${detail.busStop.code}
+                         |$POINT ${detail.comune}: ${detail.location}
+                         |""".stripMargin)
+      .map(_.trim)
+      .map(s => s.concat(System.lineSeparator()))
+      .mkString(System.lineSeparator())
   }
 }

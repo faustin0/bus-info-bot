@@ -118,7 +118,7 @@ class CanoeMessageFormatsTest extends AnyFunSuite {
     assert(actual.body === "Nessuna fermata trovata")
   }
 
-  ignore("Should format a BusStopDetails response message ") {
+  test("Should format a BusStopDetails response message ") {
 
     val msg    = BusStopDetailsResponse(
       busStops = List(
@@ -142,11 +142,11 @@ class CanoeMessageFormatsTest extends AnyFunSuite {
     )
     val actual = msg.toCanoeMessage
 
-    assert(actual.body === """|🚏 IRNERIO 303 
-                              |BOLOGNA : VIA IRNERIO FR 20/C
+    assert(actual.body === """|🚏 IRNERIO 303
+                              |📌 BOLOGNA: VIA IRNERIO FR 20/C
                               |
-                              |🚏 IRNERIO 304 
-                              |BOLOGNA : VIA IRNERIO 18
+                              |🚏 IRNERIO 304
+                              |📌 BOLOGNA: VIA IRNERIO 18
                               |""".stripMargin)
   }
 }
