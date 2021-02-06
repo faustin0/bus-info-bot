@@ -15,6 +15,7 @@ import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 import org.testcontainers.containers.wait.strategy.Wait
 
+import java.time.LocalTime
 import scala.util.Right
 
 class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with AsyncIOSpec with Matchers {
@@ -70,6 +71,52 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
         _        <- registerExpectation
         sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
         response <- sut.getNextBuses(NextBusQuery("303", Some("28")))
+      } yield response
+    }.asserting {
+      case Right(IncomingBuses(_, _, buses)) => assert(buses.nonEmpty)
+      case _                                 => fail()
+    }
+  }
+
+  "should retrieve the next buses for a given stop and hour" in {
+
+    mockServerClient.use { mock =>
+      val registerExpectation = IO(
+        mock
+          .when(
+            request()
+              .withPath("/bus-stops/303")
+              .withMethod("GET")
+              .withQueryStringParameter("bus", "28")
+              .withQueryStringParameter("hour", "16:30")
+          )
+          .respond(
+            response().withBody(
+              json"""
+                  [
+                    {
+                      "busStopCode": 303,
+                      "bus": "28",
+                      "satellite": true,
+                      "hour": "16:37",
+                      "busInfo": ""
+                    },
+                    {
+                      "busStopCode": 303,
+                      "bus": "28",
+                      "satellite": false,
+                      "hour": "16:39",
+                      "busInfo": ""
+                    }
+                  ]
+                """.noSpaces
+            )
+          )
+      )
+      for {
+        _        <- registerExpectation
+        sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
+        response <- sut.getNextBuses(NextBusQuery("303", Some("28"), Some(LocalTime.of(16, 30))))
       } yield response
     }.asserting {
       case Right(IncomingBuses(_, _, buses)) => assert(buses.nonEmpty)

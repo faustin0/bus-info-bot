@@ -14,6 +14,7 @@ import org.http4s.client.{ Client, JavaNetClientBuilder }
 import org.http4s.headers.{ `Content-Type`, Accept }
 
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 
@@ -24,7 +25,7 @@ class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) e
       method = GET,
       uri = (uri / "bus-stops" / query.stop)
         .withOptionQueryParam("bus", query.bus)
-        .withOptionQueryParam("hour", query.hour.map(_.formatted("HH:mm"))),
+        .withOptionQueryParam("hour", query.hour.map(_.format(DateTimeFormatter.ofPattern("HH:mm")))),
       headers = Headers.of(
         Accept(MediaType.application.json),
         `Content-Type`(MediaType.application.json)
