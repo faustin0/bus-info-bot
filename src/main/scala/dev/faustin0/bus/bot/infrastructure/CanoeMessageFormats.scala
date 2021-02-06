@@ -71,4 +71,17 @@ object CanoeMessageFormats {
       .map(s => s.concat(System.lineSeparator()))
       .mkString(System.lineSeparator())
   }
+
+  implicit object WaitingMessage extends CanoeMessage[NextBusQuery] {
+    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
+
+    override def body(q: NextBusQuery): String =
+      s"""
+         |Richiesta: 
+         |$BUS_STOP ${q.stop}
+         |$BUS ${q.bus.getOrElse("*")}
+         |$CLOCK ${q.hour.getOrElse("in arrivo")}
+         |""".stripMargin
+
+  }
 }

@@ -95,7 +95,7 @@ object BotApplication {
     busInfoClient: BusInfoApi[F]
   ): Scenario[F, Unit] =
     for {
-      waitingMsg     <- Scenario.eval(chat.send(s"Richiesta $q"))
+      waitingMsg     <- Scenario.eval(chat.send(q.toCanoeMessage.body))
       _              <- Scenario.eval(chat.setAction(Typing))
       requestOutcome <- Scenario.eval(busInfoClient.getNextBuses(q))
       msgData         = requestOutcome.fold(
