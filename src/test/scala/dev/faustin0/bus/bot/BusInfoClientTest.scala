@@ -24,8 +24,7 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
   val httpClient: Client[IO] = JavaNetClientBuilder[IO](blocker).create
 
   override val container: MockServerContainer = MockServerContainer("5.11.2").configure { c =>
-    c.withLogConsumer(c => println(c.getUtf8String))
-      .waitingFor(Wait.forLogMessage(".*started on port:.*", 1))
+    c.waitingFor(Wait.forLogMessage(".*started on port:.*", 1))
   }
 
   lazy val mockServerClient: Resource[IO, MockServerClient] =

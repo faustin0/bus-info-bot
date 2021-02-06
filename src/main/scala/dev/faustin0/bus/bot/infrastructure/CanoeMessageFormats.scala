@@ -16,9 +16,9 @@ object CanoeMessageFormats {
 
     override def body(a: NextBusResponse): String = a match {
       case NoMoreBus(requestedStop, requestedBus) =>
-        s"""|🚏 ${requestedStop.code}
-            |🚌 ${requestedBus.map(_.code).getOrElse("*")}
-            |🕐 Nessun' altra corsa di 85 per la fermata 303
+        s"""|$BUS_STOP ${requestedStop.code}
+            |$BUS ${requestedBus.map(_.code).getOrElse("*")}
+            |$CLOCK Nessun' altra corsa di 85 per la fermata 303
             |""".stripMargin
 
       case IncomingBuses(requestedStop, requestedBus, info) =>
