@@ -6,8 +6,8 @@ import dev.faustin0.bus.bot.domain.Emoji._
 import dev.faustin0.bus.bot.domain.{ FailedRequest, _ }
 
 trait CanoeMessage[M] {
-  def keyboard(callbackData: String): Keyboard
   def body(a: M): String
+  def keyboard(callbackData: String): Keyboard
 }
 
 object CanoeMessageFormats {
@@ -16,9 +16,10 @@ object CanoeMessageFormats {
 
     override def body(a: NextBusResponse): String = a match {
       case NoMoreBus(requestedStop, requestedBus) =>
+        val requestedBusCode = requestedBus.map(_.code).getOrElse("*")
         s"""|$BUS_STOP ${requestedStop.code}
-            |$BUS ${requestedBus.map(_.code).getOrElse("*")}
-            |$CLOCK Nessun' altra corsa di 85 per la fermata 303
+            |$BUS $requestedBusCode
+            |$CLOCK Nessun' altra corsa di $requestedBusCode per la fermata ${requestedStop.code}
             |""".stripMargin
 
       case IncomingBuses(requestedStop, requestedBus, info) =>
@@ -51,17 +52,17 @@ object CanoeMessageFormats {
   }
 
   implicit object FailMessage extends CanoeMessage[FailedRequest] {
-    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
 
     override def body(a: FailedRequest): String = a match {
       case GeneralFailure() => "Errore nella gestione della richiesta"
       case BadRequest()     => "Errore nei dati inseriti, /help?"
       case MissingBusStop() => "Nessuna fermata trovata"
     }
+
+    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
   }
 
   implicit object DetailsMessage extends CanoeMessage[BusStopDetailsResponse] {
-    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
 
     override def body(a: BusStopDetailsResponse): String = a.busStops
       .map(detail => s"""|$BUS_STOP ${detail.name} ${detail.busStop.code}
@@ -70,10 +71,11 @@ object CanoeMessageFormats {
       .map(_.trim)
       .map(s => s.concat(System.lineSeparator()))
       .mkString(System.lineSeparator())
+
+    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
   }
 
   implicit object WaitingMessage extends CanoeMessage[NextBusQuery] {
-    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
 
     override def body(q: NextBusQuery): String =
       s"""
@@ -82,6 +84,8 @@ object CanoeMessageFormats {
          |$BUS ${q.bus.getOrElse("*")}
          |$CLOCK ${q.hour.getOrElse("in arrivo")}
          |""".stripMargin
+
+    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
 
   }
 }

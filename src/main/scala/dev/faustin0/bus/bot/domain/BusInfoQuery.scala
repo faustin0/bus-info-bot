@@ -1,8 +1,8 @@
 package dev.faustin0.bus.bot.domain
 
 import cats.implicits._
-import io.circe.Encoder
-import io.circe.generic.semiauto.deriveEncoder
+import io.circe.{ Decoder, Encoder }
+import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 
 import java.time.LocalTime
 import java.time.format.{ DateTimeFormatter, DateTimeFormatterBuilder }
@@ -59,8 +59,10 @@ case object BusInfoQuery {
     Either
       .catchNonFatal(LocalTime.parse(time, timeFormatter))
       .leftMap(ex => new RuntimeException(s"failed to parse hour: $time", ex))
+
 }
 
-object Encoders {
+object Codecs {
   implicit val NextBusQueryEncoder: Encoder[NextBusQuery] = deriveEncoder[NextBusQuery]
+  implicit val NextBusQueryDecoder: Decoder[NextBusQuery] = deriveDecoder[NextBusQuery]
 }

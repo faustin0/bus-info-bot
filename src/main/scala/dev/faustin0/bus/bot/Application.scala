@@ -3,18 +3,20 @@ package dev.faustin0.bus.bot
 import canoe.api.models.Keyboard.Inline
 import canoe.api.{ callbackQueryApi, chatApi, messageApi, Bot, Scenario, TelegramClient }
 import canoe.models.ChatAction.Typing
-import canoe.models._
 import canoe.models.outgoing.TextContent
+import canoe.models.{ CallbackButtonSelected, Update, _ }
 import canoe.syntax._
+import cats.Monad
 import cats.effect.{ ContextShift, ExitCode, IO, IOApp, Sync, Timer }
 import cats.implicits._
-import cats.{ Applicative, Monad }
+import dev.faustin0.bus.bot.domain.Codecs._
 import dev.faustin0.bus.bot.domain._
 import dev.faustin0.bus.bot.infrastructure.CanoeMessageAdapter._
 import dev.faustin0.bus.bot.infrastructure.CanoeMessageFormats._
 import dev.faustin0.bus.bot.infrastructure.Http4sBusInfoClient
 import fs2.{ Pipe, Stream }
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import io.circe.parser.decode
 
 import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
@@ -35,6 +37,7 @@ object Application extends IOApp {
 }
 
 object BotApplication {
+  implicit def unsafeLogger = Slf4jLogger.getLogger[IO]
 
   def app(telegramClient: Stream[IO, TelegramClient[IO]], busClient: BusInfoApi[IO])(implicit
     cs: ContextShift[IO],
@@ -45,11 +48,10 @@ object BotApplication {
         Bot
           .polling[IO]
           .follow(busStopQueries(busClient))
-          .through(answerCallbacks)
+          .through(answerCallbacks(busClient))
       )
       .compile
       .drain
-//      .handleErrorWith(t => Logger[IO].error(t)("Failure running bot scenarios "))
       .as(ExitCode.Success)
 
   def busStopQueries[F[_]: TelegramClient: Sync](busInfoClient: BusInfoApi[F]): Scenario[F, Unit] =
@@ -60,10 +62,8 @@ object BotApplication {
       query     = BusInfoQuery.fromText(rawQuery.text)
       response  = query match {
                     case q: NextBusQuery => nextBusScenario(q, chat, busInfoClient)
-
-                    case q: BusStopInfo => detailsScenario(q, chat, busInfoClient)
-
-                    case q: Malformed => Scenario.done[F] //todo CanoeMessageData(q.toString)
+                    case q: BusStopInfo  => detailsScenario(q, chat, busInfoClient)
+                    case q: Malformed    => Scenario.done[F] //todo CanoeMessageData(q.toString)
                   }
       _        <- response.handleErrorWith { ex =>
                     for {
@@ -100,7 +100,7 @@ object BotApplication {
       requestOutcome <- Scenario.eval(busInfoClient.getNextBuses(q))
       msgData         = requestOutcome.fold(
                           failure => failure.toCanoeMessage,
-                          success => success.toCanoeMessage
+                          success => success.toCanoeMessage(q)
                         )
       _              <- Scenario.eval {
                           for {
@@ -113,17 +113,28 @@ object BotApplication {
                         }
     } yield ()
 
-  def answerCallbacks[F[_]: Monad: TelegramClient]: Pipe[F, Update, Update] =
-    _.evalTap {
-      case CallbackButtonSelected(_, query) =>
-        query.data match {
-          case Some(cbd) =>
-            for {
-              _ <- query.message.traverse(_.chat.send(cbd))
-              _ <- query.finish
-            } yield ()
-          case _         => Applicative[F].unit
-        }
-      case _                                => Applicative[F].unit
-    }
+  def answerCallbacks(
+    busInfoClient: BusInfoApi[IO]
+  )(implicit telegramClient: TelegramClient[IO]): Pipe[IO, Update, Update] =
+    mainStream =>
+      mainStream.evalTap {
+        case CallbackButtonSelected(_, query) =>
+          query.data match {
+            case Some(callBackData) =>
+              for {
+                chat          <- IO.fromOption(query.message.map(_.chat))(new IllegalStateException("no chat in callback"))
+                queryToUpdate <- IO.fromEither(decode[NextBusQuery](callBackData))
+                queryUpdate   <- busInfoClient.getNextBuses(queryToUpdate)
+                msgData        = queryUpdate.fold(
+                                   failure => failure.toCanoeMessage,
+                                   success => success.toCanoeMessage(queryToUpdate)
+                                 )
+                _             <- chat.send(msgData.body, keyboard = msgData.keyboard)
+                _             <- query.inform(s"Richiesta aggiornata")
+              } yield ()
+            case _                  => IO.unit
+          }
+        case _                                => IO.unit
+      }.handleErrorWith(t => Stream.eval(IO(println(t))).flatMap(_ => mainStream)) //todo use logger
+
 }
