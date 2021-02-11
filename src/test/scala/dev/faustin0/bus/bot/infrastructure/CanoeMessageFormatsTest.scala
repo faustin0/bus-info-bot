@@ -128,7 +128,7 @@ class CanoeMessageFormatsTest extends AnyFunSuite {
           location = "VIA IRNERIO FR 20/C",
           comune = "BOLOGNA",
           areaCode = 500,
-          position = BusStopPosition(1, 2, 3, 4)
+          position = BusStopPosition(1, 2, 45.3f, 12.4f)
         ),
         BusStopDetails(
           busStop = BusStop(304),
@@ -136,17 +136,21 @@ class CanoeMessageFormatsTest extends AnyFunSuite {
           location = "VIA IRNERIO 18",
           comune = "BOLOGNA",
           areaCode = 500,
-          position = BusStopPosition(5, 6, 7, 8)
+          position = BusStopPosition(5, 6, 44.4f, 11.3f)
         )
       )
     )
     val actual = msg.toCanoeMessage
-
-    assert(actual.body === """|🚏 IRNERIO 303
-                              |📌 BOLOGNA: VIA IRNERIO FR 20/C
-                              |
-                              |🚏 IRNERIO 304
-                              |📌 BOLOGNA: VIA IRNERIO 18
-                              |""".stripMargin)
+    assert(
+      actual.body ===
+        """|🚏 IRNERIO
+           |🔢 <code>303</code>
+           |📌 <a href='https://www.google.com/maps/search/?api=1&query=45.3,12.4'>BOLOGNA: VIA IRNERIO FR 20/C</a>
+           |
+           |🚏 IRNERIO
+           |🔢 <code>304</code>
+           |📌 <a href='https://www.google.com/maps/search/?api=1&query=44.4,11.3'>BOLOGNA: VIA IRNERIO 18</a>
+           |""".stripMargin
+    )
   }
 }

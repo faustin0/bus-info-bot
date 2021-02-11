@@ -64,15 +64,20 @@ object CanoeMessageFormats {
 
   implicit object DetailsMessage extends CanoeMessage[BusStopDetailsResponse] {
 
-    override def body(a: BusStopDetailsResponse): String = a.busStops
-      .map(detail => s"""|$BUS_STOP ${detail.name} ${detail.busStop.code}
-                         |$POINT ${detail.comune}: ${detail.location}
-                         |""".stripMargin)
+    override def body(a: BusStopDetailsResponse): String = a.busStops.map { detail =>
+      s"""|$BUS_STOP ${detail.name}
+          |$NUM <code>${detail.busStop.code}</code>
+          |$POINT ${makeHtmlMapsUrl(detail)}
+          |""".stripMargin
+    }
       .map(_.trim)
       .map(s => s.concat(System.lineSeparator()))
       .mkString(System.lineSeparator())
 
     override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
+
+    private def makeHtmlMapsUrl(detail: BusStopDetails) =
+      s"""<a href='https://www.google.com/maps/search/?api=1&query=${detail.position.lat},${detail.position.long}'>${detail.comune}: ${detail.location}</a>"""
   }
 
   implicit object WaitingMessage extends CanoeMessage[NextBusQuery] {
@@ -87,5 +92,11 @@ object CanoeMessageFormats {
 
     override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
 
+  }
+
+  implicit object MalformedMessage extends CanoeMessage[Malformed] {
+    override def body(a: Malformed): String = "Errore nei dati inseriti,  /help ?"
+
+    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
   }
 }
