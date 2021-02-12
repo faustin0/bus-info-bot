@@ -8,7 +8,7 @@ import org.scalatest.funsuite.AnyFunSuite
 
 import java.time.LocalTime
 
-class CanoeMessageFormatsTest extends AnyFunSuite {
+class CanoeTextMessageFormatsTest extends AnyFunSuite {
 
   test("Should format a successful message with planned hour") {
 
@@ -105,7 +105,6 @@ class CanoeMessageFormatsTest extends AnyFunSuite {
   }
 
   test("Should format a GeneralFailure message") {
-
     val actual = GeneralFailure().toCanoeMessage
 
     assert(actual.body === "Errore nella gestione della richiesta")
@@ -150,6 +149,26 @@ class CanoeMessageFormatsTest extends AnyFunSuite {
            |🚏 IRNERIO
            |🔢 <code>304</code>
            |📌 <a href='https://www.google.com/maps/search/?api=1&query=44.4,11.3'>BOLOGNA: VIA IRNERIO 18</a>
+           |""".stripMargin
+    )
+  }
+
+  test("Should format a Help message") {
+
+    val actual = HelpResponse.toCanoeMessage
+
+    assert(
+      actual.body ===
+        s"""
+           |Di seguito alcuni esempi, ricorda: l'ordine è importante.
+           |richiedere i prossimi bus 28 in arrivo alla fermata 303:
+           |<code>303 28</code>
+           |richiedere i prossimi bus in arrivo alla fermata 3345:
+           |<code>3345</code>
+           |richiedere i prossimi bus 28 in arrivo alla fermata 3345 per le ore 9.30:
+           |<code>3345 28 0930</code>
+           |informazioni generali sulla fermata Irnerio:
+           |<code>Irnerio</code>
            |""".stripMargin
     )
   }

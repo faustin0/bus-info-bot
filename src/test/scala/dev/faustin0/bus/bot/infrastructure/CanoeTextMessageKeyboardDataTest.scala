@@ -12,7 +12,7 @@ import org.scalatest.matchers.should.Matchers
 
 import java.time.LocalTime
 
-class CanoeMessageKeyboardDataTest extends AnyFunSuite with Inside with Matchers {
+class CanoeTextMessageKeyboardTest extends AnyFunSuite with Inside with Matchers {
 
   test("should contain the expected keyboard data for a IncomingBuses message") {
 

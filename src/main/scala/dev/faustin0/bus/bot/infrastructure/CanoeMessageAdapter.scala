@@ -15,19 +15,19 @@ object CanoeMessageAdapter {
 
   implicit class CanoeAdapter[B](val b: B) extends AnyVal {
 
-    def toCanoeMessage[C](callbackData: C)(implicit M: CanoeMessage[B], E: Encoder[C]): CanoeMessageData =
+    def toCanoeMessage[C](callbackData: C)(implicit M: CanoeTextMessage[B], E: Encoder[C]): CanoeMessageData =
       CanoeMessageData(
         body = M.body(b),
         keyboard = M.keyboard(callbackData.asJson.noSpaces)
       )
 
-    def toCanoeMessage(implicit M: CanoeMessage[B]): CanoeMessageData =
+    def toCanoeMessage(implicit M: CanoeTextMessage[B]): CanoeMessageData =
       toCanoeMessage(json"{}")
   }
 
   implicit class CanoeErrAdapter(val b: FailedRequest) extends AnyVal {
 
-    def toCanoeMessage(implicit M: CanoeMessage[FailedRequest]): CanoeMessageData =
+    def toCanoeMessage(implicit M: CanoeTextMessage[FailedRequest]): CanoeMessageData =
       CanoeMessageData(
         body = M.body(b),
         keyboard = M.keyboard(json"{}".asJson.noSpaces)

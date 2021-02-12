@@ -57,6 +57,8 @@ case class BusStopPosition(
   long: Float
 )
 
+case object HelpResponse {}
+
 object NextBus {
 
   def apply(busStop: BusStop, bus: Bus, hourOfArrival: HourOfArrival, additionalInfo: String): NextBus =
