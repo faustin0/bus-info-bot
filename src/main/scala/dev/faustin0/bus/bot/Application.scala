@@ -3,6 +3,7 @@ package dev.faustin0.bus.bot
 import canoe.api.models.Keyboard.Inline
 import canoe.api.{ callbackQueryApi, chatApi, messageApi, Bot, Scenario, TelegramClient }
 import canoe.models.ChatAction.Typing
+import canoe.models.messages.{ TelegramMessage, TextMessage }
 import canoe.models.outgoing.TextContent
 import canoe.models.{ CallbackButtonSelected, Update, _ }
 import canoe.syntax._
@@ -47,8 +48,8 @@ object BotApplication {
       .flatMap(implicit client =>
         Bot
           .polling[IO]
-          .follow(busStopQueries(busClient))
-          .through(answerCallbacks(busClient))
+          .follow(busStopQueries(busClient), helpCommandScenario)
+          .through(updateRequestCallback(busClient))
       )
       .compile
       .drain
@@ -56,21 +57,38 @@ object BotApplication {
 
   def busStopQueries[F[_]: TelegramClient: Sync](busInfoClient: BusInfoApi[F]): Scenario[F, Unit] =
     for {
-      logger   <- Scenario.eval(Slf4jLogger.create[F])
-      rawQuery <- Scenario.expect(textMessage)
+      log      <- Scenario.eval(Slf4jLogger.create[F])
+      rawQuery <- Scenario.expect(textNotCommand)
       chat      = rawQuery.chat
       query     = BusInfoQuery.fromText(rawQuery.text)
       response  = query match {
                     case q: NextBusQuery => nextBusScenario(q, chat, busInfoClient)
                     case q: BusStopInfo  => detailsScenario(q, chat, busInfoClient)
-                    case q: Malformed    => Scenario.done[F] //todo CanoeMessageData(q.toString)
+                    case q: Malformed    => malformedQueryScenario(q, chat)
                   }
       _        <- response.handleErrorWith { ex =>
                     for {
-                      _ <- Scenario.eval(logger.error(ex)(s"Failure for query: '$rawQuery'"))
+                      _ <- Scenario.eval(log.error(ex)(s"Failure for query: '$rawQuery'"))
                       _ <- Scenario.eval(chat.send("something broke"))
                     } yield ()
                   }
+    } yield ()
+
+  def textNotCommand: PartialFunction[TelegramMessage, TextMessage] = {
+    case m: TextMessage if !m.text.startsWith("/") => m
+  }
+
+  def malformedQueryScenario[F[_]: TelegramClient](q: Malformed, chat: Chat): Scenario[F, TextMessage] =
+    Scenario.eval(chat.send(q.toCanoeMessage.body))
+
+  def helpCommandScenario[F[_]: TelegramClient]: Scenario[F, Unit] =
+    for {
+      chat <- Scenario.expect(command("help").chat)
+      _    <- Scenario.eval(
+                chat.send(
+                  TextContent(HelpResponse.toCanoeMessage.body, parseMode = Some(ParseMode.HTML))
+                )
+              )
     } yield ()
 
   def detailsScenario[F[_]: TelegramClient](
@@ -85,7 +103,13 @@ object BotApplication {
                          success => success.toCanoeMessage
                        )
       _             <- Scenario.eval {
-                         chat.send(TextContent(msgData.body, parseMode = Some(ParseMode.HTML)))
+                         chat.send(
+                           TextContent(
+                             text = msgData.body,
+                             parseMode = Some(ParseMode.HTML),
+                             disableWebPagePreview = Some(true)
+                           )
+                         )
                        }
     } yield ()
 
@@ -113,7 +137,7 @@ object BotApplication {
                         }
     } yield ()
 
-  def answerCallbacks(
+  def updateRequestCallback(
     busInfoClient: BusInfoApi[IO]
   )(implicit telegramClient: TelegramClient[IO]): Pipe[IO, Update, Update] =
     mainStream =>
