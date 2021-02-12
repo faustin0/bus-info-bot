@@ -17,7 +17,7 @@ trait CanoeTextMessage[M] {
 
 object CanoeMessageFormats {
 
-  private lazy val HTML = Some(ParseMode.HTML);
+  private lazy val HTML = Some(ParseMode.HTML)
 
   implicit object NextBusMessage extends CanoeTextMessage[NextBusResponse] {
 
@@ -73,15 +73,19 @@ object CanoeMessageFormats {
 
   implicit object DetailsMessage extends CanoeTextMessage[BusStopDetailsResponse] {
 
-    override def body(a: BusStopDetailsResponse): String = a.busStops.map { detail =>
-      s"""|$BUS_STOP ${detail.name}
-          |$NUM <code>${detail.busStop.code}</code>
-          |$POINT ${makeHtmlMapsUrl(detail)}
-          |""".stripMargin
+    override def body(a: BusStopDetailsResponse): String = {
+      val stops = a.busStops.map { detail =>
+        s"""|$BUS_STOP ${detail.name}
+            |$NUM <code>${detail.busStop.code}</code>
+            |$POINT ${makeHtmlMapsUrl(detail)}
+            |""".stripMargin
+      }
+      stops
+        .map(_.trim)
+        .map(s => s.concat(System.lineSeparator()))
+        .reduceOption((s1, s2) => s1 + System.lineSeparator() + s2)
+        .getOrElse(s"$BUS_STOP Nessuna fermata trovata")
     }
-      .map(_.trim)
-      .map(s => s.concat(System.lineSeparator()))
-      .mkString(System.lineSeparator())
 
     override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
 

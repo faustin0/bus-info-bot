@@ -153,6 +153,14 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
     )
   }
 
+  test("Should format a BusStopDetails empty response message ") {
+    val msg    = BusStopDetailsResponse(Nil)
+    val actual = msg.toCanoeMessage
+    assert(
+      actual.body === """🚏 Nessuna fermata trovata"""
+    )
+  }
+
   test("Should format a Help message") {
 
     val actual = HelpResponse.toCanoeMessage
