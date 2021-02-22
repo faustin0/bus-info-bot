@@ -1,31 +1,24 @@
 package dev.faustin0.bus.bot.infrastructure
 
-import cats.effect.{ IO, Resource }
 import cats.effect.testing.scalatest.AsyncIOSpec
+import cats.effect.{ IO, Resource }
 import cats.implicits.toTraverseOps
 import com.amazonaws.auth.{ AWSStaticCredentialsProvider, BasicAWSCredentials }
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
-import com.amazonaws.services.dynamodbv2.model.{
-  AttributeDefinition,
-  AttributeValue,
-  KeySchemaElement,
-  KeyType,
-  ProvisionedThroughput,
-  ScalarAttributeType
-}
+import com.amazonaws.services.dynamodbv2.model._
 import com.dimafeng.testcontainers.{ Container, ForAllTestContainer, GenericContainer }
-import org.scalatest.BeforeAndAfterEach
+import dev.faustin0.bus.bot.domain.User
 import org.scalatest.freespec.AsyncFreeSpec
-import org.scalatest.funsuite.AnyFunSuite
-import org.scalatest.matchers.must.Matchers
+import org.scalatest.matchers.must.Matchers.contain
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.testcontainers.containers.output.OutputFrame
 import org.testcontainers.containers.wait.strategy.Wait
 
 import java.util.{ List => JavaList }
 import scala.jdk.CollectionConverters._
 
-class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer with AsyncIOSpec with Matchers {
+class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer with AsyncIOSpec {
 
   private lazy val dynamoContainer = GenericContainer(
     dockerImage = "amazon/dynamodb-local",
@@ -41,7 +34,7 @@ class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer wi
 
   override def afterStart(): Unit =
     createDynamoClient().use { client =>
-      val createTable = IO(
+      IO(
         client
           .createTable(
             JavaList.of(
@@ -54,23 +47,6 @@ class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer wi
             new ProvisionedThroughput(5, 5)
           )
       )
-
-      def addItem(id: Int) = IO(
-        client.putItem(
-          "TelegramUsers",
-          Map(
-            "id"         -> new AttributeValue().withN(String.valueOf(id)),
-            "first_name" -> new AttributeValue().withS(s"aName-$id"),
-            "last_name"  -> new AttributeValue().withS(s"lastName-$id"),
-            "username"   -> new AttributeValue().withS(s"aUsername-$id")
-          ).asJava
-        )
-      )
-
-      for {
-        _ <- createTable
-        _ <- (1 to 100).map(addItem).toList.sequence
-      } yield ()
     }.unsafeRunSync()
 
   private def createDynamoClient() = {
@@ -88,13 +64,23 @@ class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer wi
     }(db => IO(db.shutdown()))
   }
 
-  "retrieve user by telegram id" in {
-    val computation = createDynamoClient().use { client =>
-      val sut  = new DynamoUserRepository(client)
-      val user = sut.get(1)
-      user
-    }
+  "create and retrieve user by telegram id" in {
+    val userToInsert = User(
+      id = 42,
+      firstName = "firstName",
+      lastName = "lastName",
+      userName = "nickName",
+      language = Some("it")
+    )
 
-    computation.asserting(maybeUser => assert(maybeUser.isDefined))
+    createDynamoClient()
+      .map(new DynamoUserRepository(_))
+      .use { sut =>
+        for {
+          _ <- sut.create(userToInsert)
+          u <- sut.get(userToInsert.id)
+        } yield u
+      }
+      .asserting(maybeUser => maybeUser should contain(userToInsert))
   }
 }
