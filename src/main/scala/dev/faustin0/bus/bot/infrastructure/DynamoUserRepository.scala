@@ -2,12 +2,14 @@ package dev.faustin0.bus.bot.infrastructure
 
 import cats.effect.IO
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import com.amazonaws.services.dynamodbv2.model.{ AttributeValue, GetItemRequest, PutItemRequest, QueryRequest }
+import com.amazonaws.services.dynamodbv2.model.{ AttributeValue, GetItemRequest, PutItemRequest }
 import dev.faustin0.bus.bot.domain.{ User, UserRepository }
+import dev.faustin0.bus.bot.infrastructure.DynamoUserRepository.Table
+import io.chrisdavenport.log4cats.Logger
 
 import java.util.{ Map => JavaMap }
 
-class DynamoUserRepository(private val client: AmazonDynamoDB) extends UserRepository[IO] {
+class DynamoUserRepository(private val client: AmazonDynamoDB)(implicit log: Logger[IO]) extends UserRepository[IO] {
 
   override def create(user: User): IO[Unit] = {
     val request = new PutItemRequest()
@@ -27,7 +29,8 @@ class DynamoUserRepository(private val client: AmazonDynamoDB) extends UserRepos
         )
       )
 
-    IO(client.putItem(request))
+    log.info(s"Creating user $user") *>
+      IO(client.putItem(request)).void
   }
 
   override def get(id: Int): IO[Option[User]] = {
@@ -38,6 +41,7 @@ class DynamoUserRepository(private val client: AmazonDynamoDB) extends UserRepos
       .withKey(values)
 
     for {
+      _      <- log.debug(s"Getting user $id")
       result <- IO(client.getItem(request))
       item    = Option(result.getItem)
       user   <- IO(item.map { u =>
@@ -53,11 +57,15 @@ class DynamoUserRepository(private val client: AmazonDynamoDB) extends UserRepos
   }
 }
 
-private case object Table {
-  val name      = "TelegramUsers"
-  val id        = "id"
-  val firstName = "first_name"
-  val lastName  = "last_name"
-  val userName  = "username"
-  val language  = "language"
+object DynamoUserRepository {
+
+  private case object Table {
+    val name      = "TelegramUsers"
+    val id        = "id"
+    val firstName = "first_name"
+    val lastName  = "last_name"
+    val userName  = "username"
+    val language  = "language"
+  }
+
 }

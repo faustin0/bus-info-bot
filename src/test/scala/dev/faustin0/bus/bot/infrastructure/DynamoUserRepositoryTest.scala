@@ -2,23 +2,23 @@ package dev.faustin0.bus.bot.infrastructure
 
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.{ IO, Resource }
-import cats.implicits.toTraverseOps
 import com.amazonaws.auth.{ AWSStaticCredentialsProvider, BasicAWSCredentials }
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
 import com.amazonaws.services.dynamodbv2.model._
 import com.dimafeng.testcontainers.{ Container, ForAllTestContainer, GenericContainer }
 import dev.faustin0.bus.bot.domain.User
+import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.must.Matchers.contain
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import org.testcontainers.containers.output.OutputFrame
 import org.testcontainers.containers.wait.strategy.Wait
 
 import java.util.{ List => JavaList }
-import scala.jdk.CollectionConverters._
 
 class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer with AsyncIOSpec {
+  implicit private val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
   private lazy val dynamoContainer = GenericContainer(
     dockerImage = "amazon/dynamodb-local",
@@ -26,7 +26,7 @@ class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer wi
     command = Seq("-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"),
     waitStrategy = Wait.forLogMessage(".*CorsParams:.*", 1)
   ).configure { provider =>
-    provider.withLogConsumer((t: OutputFrame) => print(t.getUtf8String))
+    provider.withLogConsumer(t => logger.debug(t.getUtf8String).unsafeRunSync())
     ()
   }
 

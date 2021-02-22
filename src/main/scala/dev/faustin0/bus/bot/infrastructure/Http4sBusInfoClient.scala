@@ -18,14 +18,15 @@ import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 
-class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) extends BusInfoApi[F] {
+class Http4sBusInfoClient(private val client: Client[IO], uri: Uri) extends BusInfoApi[IO] {
+  private lazy val dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
-  override def getNextBuses(query: NextBusQuery): F[Either[FailedRequest, NextBusResponse]] = {
-    val req = Request[F](
+  override def getNextBuses(query: NextBusQuery): IO[Either[FailedRequest, NextBusResponse]] = {
+    val req = Request[IO](
       method = GET,
       uri = (uri / "bus-stops" / query.stop)
         .withOptionQueryParam("bus", query.bus)
-        .withOptionQueryParam("hour", query.hour.map(_.format(DateTimeFormatter.ofPattern("HH:mm")))),
+        .withOptionQueryParam("hour", query.hour.map(_.format(dateTimeFormatter))),
       headers = Headers.of(
         Accept(MediaType.application.json),
         `Content-Type`(MediaType.application.json)
@@ -57,15 +58,15 @@ class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) e
             }
             .map(parsedResp => Right(parsedResp))
             .getOrElse(Left(GeneralFailure()))
-        case Status.NotFound   => Sync[F].pure(Left(MissingBusStop()))
-        case Status.BadRequest => Sync[F].pure(Left(BadRequest()))
-        case _                 => Sync[F].pure(Left(GeneralFailure()))
+        case Status.NotFound   => IO.pure(Left(MissingBusStop()))
+        case Status.BadRequest => IO.pure(Left(BadRequest()))
+        case _                 => IO.pure(Left(GeneralFailure()))
       }
     }
   }
 
-  override def searchBusStopByName(query: BusStopInfo): F[Either[FailedRequest, BusStopDetailsResponse]] = {
-    val req = Request[F](
+  override def searchBusStopByName(query: BusStopInfo): IO[Either[FailedRequest, BusStopDetailsResponse]] = {
+    val req = Request[IO](
       method = GET,
       uri = (uri / "bus-stops").withQueryParam("name", query.stop),
       headers = Headers.of(
@@ -92,9 +93,9 @@ class Http4sBusInfoClient[F[_]: Sync](private val client: Client[F], uri: Uri) e
             )
             .map(details => Right(BusStopDetailsResponse(details)))
             .getOrElse(Left(GeneralFailure()))
-        case Status.NotFound   => Sync[F].pure(Left(MissingBusStop()))
-        case Status.BadRequest => Sync[F].pure(Left(BadRequest()))
-        case _                 => Sync[F].pure(Left(GeneralFailure()))
+        case Status.NotFound   => IO.pure(Left(MissingBusStop()))
+        case Status.BadRequest => IO.pure(Left(BadRequest()))
+        case _                 => IO.pure(Left(GeneralFailure()))
       }
     }
   }
@@ -133,12 +134,12 @@ private object JsonSchema {
 
 object Http4sBusInfoClient {
 
-  def apply(httpClient: Client[IO], uri: Uri): Http4sBusInfoClient[IO] = new Http4sBusInfoClient(httpClient, uri)
+  def apply(httpClient: Client[IO], uri: Uri): Http4sBusInfoClient = new Http4sBusInfoClient(httpClient, uri)
 
   def makeResource(
     host: String,
     executionContext: ExecutionContext
-  )(implicit ce: ConcurrentEffect[IO]): Resource[IO, Http4sBusInfoClient[IO]] =
+  )(implicit ce: ConcurrentEffect[IO]): Resource[IO, Http4sBusInfoClient] =
     BlazeClientBuilder[IO](executionContext)
       .withConnectTimeout(7 seconds)
       .withRequestTimeout(7 seconds)
@@ -149,7 +150,7 @@ object Http4sBusInfoClient {
   def make(
     host: String,
     executionContext: ExecutionContext
-  )(implicit ce: ContextShift[IO]): Http4sBusInfoClient[IO] = {
+  )(implicit ce: ContextShift[IO]): Http4sBusInfoClient = {
     val blocker      = Blocker.liftExecutionContext(executionContext)
     val httpClient   = JavaNetClientBuilder[IO](blocker).create
     val loggedClient = ClientLogger(logHeaders = false, logBody = true)(httpClient)
