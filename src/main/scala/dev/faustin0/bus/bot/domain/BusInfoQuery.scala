@@ -25,6 +25,7 @@ case object BusInfoQuery {
   //see https://stackoverflow.com/a/45618412
   private val timeFormatter = new DateTimeFormatterBuilder()
     .appendOptional(DateTimeFormatter.ofPattern("HHmm"))
+    .appendOptional(DateTimeFormatter.ofPattern("H:mm"))
     .appendOptional(DateTimeFormatter.ofPattern("HH:mm"))
     .toFormatter
 

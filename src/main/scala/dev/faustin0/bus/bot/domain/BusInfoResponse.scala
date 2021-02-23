@@ -58,6 +58,7 @@ case class BusStopPosition(
 )
 
 case object HelpResponse {}
+case class StartResponse(user: User)
 
 object NextBus {
 

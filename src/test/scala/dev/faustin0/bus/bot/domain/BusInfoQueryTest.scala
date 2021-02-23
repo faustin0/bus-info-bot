@@ -28,6 +28,14 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
     }
   }
 
+  test("format single digit hour (9:30)") {
+    val expected = NextBusQuery("3345", Some("28"), Some(LocalTime.of(9, 30)))
+
+    val query = BusInfoQuery.fromText("3345 28 9:30")
+
+    assert(query === expected)
+  }
+
   val queryWithBus =
     Table(
       "text",

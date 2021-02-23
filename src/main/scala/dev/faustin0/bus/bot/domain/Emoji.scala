@@ -9,4 +9,5 @@ object Emoji {
   val INFO      = "\u2139"       //ℹ️
   val POINT     = "\uD83D\uDCCC" //📌
   val NUM       = "\uD83D\uDD22" //🔢
+  val PENCIL    = "\uD83D\uDCDD" //📝
 }

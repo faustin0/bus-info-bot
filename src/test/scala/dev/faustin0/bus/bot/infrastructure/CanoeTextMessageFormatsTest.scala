@@ -169,15 +169,46 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
       actual.body ===
         s"""
            |Di seguito alcuni esempi, ricorda: l'ordine è importante.
+           |
            |richiedere i prossimi bus 28 in arrivo alla fermata 303:
            |<code>303 28</code>
+           |
            |richiedere i prossimi bus in arrivo alla fermata 3345:
            |<code>3345</code>
+           |
            |richiedere i prossimi bus 28 in arrivo alla fermata 3345 per le ore 9.30:
-           |<code>3345 28 0930</code>
+           |<code>3345 28 9:30</code>
+           |
            |informazioni generali sulla fermata Irnerio:
            |<code>Irnerio</code>
            |""".stripMargin
+    )
+  }
+
+  test("Should format a Start message") {
+
+    val actual = StartResponse(
+      User(
+        id = 42,
+        firstName = "expected_name",
+        lastName = "lastName",
+        userName = "username",
+        language = None
+      )
+    ).toCanoeMessage
+
+    assert(
+      actual.body ===
+        """Ciao expected_name! Benvenuto/a su TperBoBot!
+          |
+          |Puoi chiedere un bus specificando:
+          |<code>numero_fermata numero_bus</code>
+          |
+          |o conoscere i bus in arrivo in una fermata:
+          |<code>numero_fermata</code>
+          |
+          |Per altri esempi puoi consulare la sezione "help" tramite il comando /help
+          |""".stripMargin
     )
   }
 }
