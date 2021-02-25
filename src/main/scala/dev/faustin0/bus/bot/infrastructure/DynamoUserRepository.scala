@@ -1,28 +1,22 @@
 package dev.faustin0.bus.bot.infrastructure
 
-import cats.effect.{ Blocker, ContextShift, IO, Resource }
+import cats.effect.{ ContextShift, IO, Resource }
 import dev.faustin0.bus.bot.domain.{ User, UserRepository }
 import dev.faustin0.bus.bot.infrastructure.DynamoUserRepository.{ JavaFutureOps, Table }
-import io.chrisdavenport.log4cats.{ Logger, SelfAwareStructuredLogger }
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import io.chrisdavenport.log4cats.Logger
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.dynamodb.{ DynamoDbAsyncClient, DynamoDbAsyncClientBuilder }
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.services.dynamodb.model.{ AttributeValue, GetItemRequest, PutItemRequest }
 
-import scala.jdk.FutureConverters._
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.{ CancellationException, CompletableFuture }
 import java.util.{ Map => JavaMap }
 import scala.jdk.CollectionConverters.MapHasAsScala
-import scala.jdk.FutureConverters.CompletionStageOps
-import scala.util.Try
 
 class DynamoUserRepository private (private val client: DynamoDbAsyncClient)(implicit
   log: Logger[IO],
   cs: ContextShift[IO]
 ) extends UserRepository[IO] {
-
-  private lazy val blocker = Blocker[IO]
 
   override def create(user: User): IO[Unit] = {
     val request = PutItemRequest
@@ -31,15 +25,15 @@ class DynamoUserRepository private (private val client: DynamoDbAsyncClient)(imp
       .item(
         JavaMap.of(
           Table.id,
-          AttributeValue.builder().n(String.valueOf(user.id)).build(),
+          attribute(_.n(String.valueOf(user.id))),
           Table.firstName,
-          AttributeValue.builder().s(user.firstName).build(),
+          attribute(_.s(user.firstName)),
           Table.lastName,
-          AttributeValue.builder().s(user.lastName).build(),
+          attribute(_.s(user.lastName)),
           Table.userName,
-          AttributeValue.builder().s(user.userName).build(),
+          attribute(_.s(user.userName)),
           Table.language,
-          AttributeValue.builder().s(user.language.getOrElse("")).build()
+          attribute(_.s(user.language.getOrElse("")))
         )
       )
       .build()
@@ -58,7 +52,7 @@ class DynamoUserRepository private (private val client: DynamoDbAsyncClient)(imp
       .build()
 
     for {
-      _      <- log.debug(s"Getting user $id")
+      _      <- log.info(s"Getting user $id")
       result <- IO(client.getItem(request)).fromCompletable
       item    = result.item().asScala
       user    = for {
@@ -70,6 +64,12 @@ class DynamoUserRepository private (private val client: DynamoDbAsyncClient)(imp
                 } yield User(id = id, firstName = firstName, lastName = lastName, userName = userName, language = language)
 
     } yield user
+  }
+
+  private def attribute(b: AttributeValue.Builder => Unit): AttributeValue = {
+    val builder = AttributeValue.builder()
+    b(builder)
+    builder.build()
   }
 }
 
@@ -86,23 +86,42 @@ object DynamoUserRepository {
 
   implicit class JavaFutureOps[T](val unevaluatedCF: IO[CompletableFuture[T]]) extends AnyVal {
 
-    def fromCompletable(implicit cs: ContextShift[IO]): IO[T] =
-      IO.fromFuture(unevaluatedCF.map(_.asScala))
+    def fromCompletable: IO[T] =
+      unevaluatedCF.flatMap { cf =>
+        IO.cancelable { callback =>
+          cf.handle((res: T, err: Throwable) =>
+            err match {
+              case null                     => callback(Right(res))
+              case _: CancellationException => ()
+              case ex                       => callback(Left(ex))
+            }
+          )
+          IO.delay(cf.cancel(true))
+        }
+      }
   }
 
   def apply(dynamoClient: DynamoDbAsyncClient)(implicit cs: ContextShift[IO], l: Logger[IO]): UserRepository[IO] =
     new DynamoUserRepository(dynamoClient)
 
-  def makeFromAws(implicit cs: ContextShift[IO], l: Logger[IO]): Try[UserRepository[IO]] =
-    Try(DynamoDbAsyncClient.builder().build()).map(DynamoUserRepository(_))
+  def makeFromAws(implicit cs: ContextShift[IO], l: Logger[IO]): Resource[IO, UserRepository[IO]] =
+    createDynamoRepo {
+      DynamoDbAsyncClient
+        .builder()
+        .build()
+    }
 
-  def makeFromEnv(implicit cs: ContextShift[IO], l: Logger[IO]): Try[UserRepository[IO]] =
-    Try {
+  def makeFromEnv(implicit cs: ContextShift[IO], l: Logger[IO]): Resource[IO, UserRepository[IO]] =
+    createDynamoRepo {
       DynamoDbAsyncClient
         .builder()
         .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
         .region(Region.EU_CENTRAL_1)
         .build()
-    }.map(DynamoUserRepository(_))
+    }
 
+  private def createDynamoRepo(client: => DynamoDbAsyncClient)(implicit cs: ContextShift[IO], l: Logger[IO]) =
+    Resource
+      .fromAutoCloseable(IO(client))
+      .map(DynamoUserRepository(_))
 }

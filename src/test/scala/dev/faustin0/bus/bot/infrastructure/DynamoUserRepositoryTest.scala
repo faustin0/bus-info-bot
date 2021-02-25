@@ -2,12 +2,14 @@ package dev.faustin0.bus.bot.infrastructure
 
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.{ IO, Resource }
+import cats.implicits._
 import com.dimafeng.testcontainers.{ Container, ForAllTestContainer, GenericContainer }
 import dev.faustin0.bus.bot.domain.User
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
 import org.testcontainers.containers.wait.strategy.Wait
 import software.amazon.awssdk.auth.credentials.{ StaticCredentialsProvider, _ }
 import software.amazon.awssdk.regions.Region
@@ -56,8 +58,8 @@ class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer wi
               .provisionedThroughput(
                 ProvisionedThroughput
                   .builder()
-                  .readCapacityUnits(5)
-                  .writeCapacityUnits(5)
+                  .readCapacityUnits(2000)
+                  .writeCapacityUnits(2000)
                   .build()
               )
               .build()
