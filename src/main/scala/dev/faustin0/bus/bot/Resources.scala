@@ -21,7 +21,7 @@ object Resources {
     for {
       telegramClient <- TelegramClient[IO](telegramToken, ec)
       busInfoApi     <- Http4sBusInfoClient.makeResource("http://bus-app.fware.net/", ec)
-      userRepo       <- DynamoUserRepository.makeFromAws
+      userRepo       <- DynamoUserRepository.makeFromEnv
       resources       = Resources(
                           telegramClient,
                           busInfoApi,
@@ -29,7 +29,7 @@ object Resources {
                         )
     } yield resources
 
-  private case class Resources(
+  case class Resources private (
     telegramClient: TelegramClient[IO],
     busInfoApi: BusInfoApi[IO],
     userRepo: UserRepository[IO]
