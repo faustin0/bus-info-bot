@@ -21,9 +21,8 @@ import io.circe.parser.decode
 object Scenarios {
   implicit private val logger = Slf4jLogger.getLogger[IO] //todo leave this here ?
 
-  def busStopQueries[F[_]: TelegramClient: Sync](busInfoClient: BusInfoApi[F]): Scenario[F, Unit] =
+  def busStopQueries(busInfoClient: BusInfoApi[IO])(implicit tc: TelegramClient[IO]): Scenario[IO, Unit] =
     for {
-      log      <- Scenario.eval(Slf4jLogger.create[F])
       rawQuery <- Scenario.expect(textNotCommand)
       chat      = rawQuery.chat
       query     = BusInfoQuery.fromText(rawQuery.text)
@@ -34,7 +33,7 @@ object Scenarios {
                   }
       _        <- response.handleErrorWith { ex =>
                     for {
-                      _ <- Scenario.eval(log.error(ex)(s"Failure for query: '$rawQuery'"))
+                      _ <- Scenario.eval(logger.error(ex)(s"Failure for query: '$rawQuery'"))
                       _ <- Scenario.eval(chat.send("something broke"))
                     } yield ()
                   }
