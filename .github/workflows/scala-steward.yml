@@ -1,0 +1,16 @@
+name: Scala Steward
+
+on:
+  schedule:
+    - cron: '0 6 * * 0' # 00:00 every Sunday
+  workflow_dispatch:    # enable manual trigger of workflow
+
+jobs:
+  scala-steward:
+    runs-on: ubuntu-latest
+    name: Launch Scala Steward
+    steps:
+      - name: Launch Scala Steward
+        uses: scala-steward-org/scala-steward-action@v2.11.0
+        with:
+          github-token: ${{ secrets.STEWARD_SECRET }}

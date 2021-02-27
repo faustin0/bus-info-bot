@@ -39,13 +39,14 @@ lazy val root = project
     fork in Test := true
   )
   .settings(
-    assemblyMergeStrategy in assembly := {
-      case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties") =>
-        MergeStrategy.singleOrError //TODO remove swarreg stuff
-      case x                                                                            =>
-        val oldStrategy = (assemblyMergeStrategy in assembly).value
-        oldStrategy(x)
-    },
+    assemblySetting,
     test in assembly := {},
-    assemblyJarName in assembly := "bus-info-bot-app.jar"
+    assemblyJarName in assembly := "bus-info-bot.jar"
   )
+
+lazy val assemblySetting = assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.last
+  case "module-info.class"                                  => MergeStrategy.concat
+  case "mime.types"                                         => MergeStrategy.filterDistinctLines
+  case s                                                    => MergeStrategy.defaultMergeStrategy(s)
+}
