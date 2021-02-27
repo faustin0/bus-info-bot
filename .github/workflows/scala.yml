@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: bus-info-bot.jar
-          path: /target/scala-2.13/bus-info-bot.jar
+          path: target/scala-2.13/bus-info-bot.jar
           if-no-files-found: error
 
 # TODO docker
