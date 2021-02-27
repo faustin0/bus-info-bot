@@ -12,7 +12,7 @@ object Dependencies {
   val dynamodbVersion            = "2.16.5"
   val logbackVersion             = "1.2.3"
   val canoeVersion               = "0.5.1"
-  val fs2Version                 = "2.5.0"
+  val fs2Version                 = "2.5.3"
 
   lazy val dependencies = Seq(
     "org.typelevel"         %% "cats-effect"         % catsVersion,
