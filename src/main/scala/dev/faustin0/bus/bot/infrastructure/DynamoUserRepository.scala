@@ -43,7 +43,7 @@ class DynamoUserRepository private (private val client: DynamoDbAsyncClient)(imp
   }
 
   override def get(id: Int): IO[Option[User]] = {
-    val values = JavaMap.of("id", AttributeValue.builder().n(id.toString).build())
+    val values = JavaMap.of("id", attribute(_.n(id.toString)))
 
     val request = GetItemRequest
       .builder()
@@ -86,8 +86,8 @@ object DynamoUserRepository {
 
   implicit class JavaFutureOps[T](val unevaluatedCF: IO[CompletableFuture[T]]) extends AnyVal {
 
-    def fromCompletable: IO[T] =
-      unevaluatedCF.flatMap { cf =>
+    def fromCompletable(implicit cs: ContextShift[IO]): IO[T] = {
+      val computation: IO[T] = unevaluatedCF.flatMap { cf =>
         IO.cancelable { callback =>
           cf.handle((res: T, err: Throwable) =>
             err match {
@@ -99,6 +99,8 @@ object DynamoUserRepository {
           IO.delay(cf.cancel(true))
         }
       }
+      computation.guarantee(cs.shift)
+    }
   }
 
   def apply(dynamoClient: DynamoDbAsyncClient)(implicit cs: ContextShift[IO], l: Logger[IO]): UserRepository[IO] =
