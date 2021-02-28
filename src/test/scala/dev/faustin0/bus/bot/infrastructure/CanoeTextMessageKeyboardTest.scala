@@ -1,6 +1,6 @@
 package dev.faustin0.bus.bot.infrastructure
 
-import canoe.models.{ ForceReply, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove }
+import canoe.models.{ InlineKeyboardMarkup, ReplyKeyboardMarkup }
 import dev.faustin0.bus.bot.domain.Codecs.NextBusQueryEncoder
 import dev.faustin0.bus.bot.domain.{ Bus, _ }
 import dev.faustin0.bus.bot.infrastructure.CanoeMessageAdapter._
@@ -40,4 +40,35 @@ class CanoeTextMessageKeyboardTest extends AnyFunSuite with Inside with Matchers
     }
   }
 
+  test("should contain the expected keyboard data for a BusStopDetailsResponse message") {
+
+    val msg = BusStopDetailsResponse(
+      busStops = List(
+        BusStopDetails(
+          busStop = BusStop(303),
+          name = "IRNERIO",
+          location = "VIA IRNERIO FR 20/C",
+          comune = "BOLOGNA",
+          areaCode = 500,
+          position = BusStopPosition(1, 2, 45.3f, 12.4f)
+        ),
+        BusStopDetails(
+          busStop = BusStop(304),
+          name = "IRNERIO",
+          location = "VIA IRNERIO 18",
+          comune = "BOLOGNA",
+          areaCode = 500,
+          position = BusStopPosition(5, 6, 44.4f, 11.3f)
+        )
+      )
+    )
+
+    val actual = msg.toCanoeMessage
+    inside(actual.keyboard.replyMarkup) { case Some(keyboard) =>
+      inside(keyboard) { case ReplyKeyboardMarkup(Seq(Seq(b1), Seq(b2)), None, None, None) =>
+        b1.text shouldBe "303"
+        b2.text shouldBe "304"
+      }
+    }
+  }
 }

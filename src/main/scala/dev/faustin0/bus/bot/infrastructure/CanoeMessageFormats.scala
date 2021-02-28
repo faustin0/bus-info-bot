@@ -1,7 +1,7 @@
 package dev.faustin0.bus.bot.infrastructure
 
 import canoe.api.models.Keyboard
-import canoe.models.{ InlineKeyboardButton, InlineKeyboardMarkup, ParseMode }
+import canoe.models.{ InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ParseMode, ReplyKeyboardMarkup }
 import dev.faustin0.bus.bot.domain.Emoji._
 import dev.faustin0.bus.bot.domain.{ FailedRequest, _ }
 
@@ -87,7 +87,19 @@ object CanoeMessageFormats {
         .getOrElse(s"$BUS_STOP Nessuna fermata trovata")
     }
 
-    override def keyboard(a: BusStopDetailsResponse, callbackData: String): Keyboard = Keyboard.Unchanged
+    override def keyboard(a: BusStopDetailsResponse, callbackData: String): Keyboard = {
+
+      val buttons = a.busStops
+        .map(bs => bs.busStop.code)
+        .map(text => KeyboardButton.text(text.toString))
+
+      val markup = ReplyKeyboardMarkup.singleColumn(
+        buttons,
+        resizeKeyboard = Some(true),
+        oneTimeKeyboard = Some(true)
+      )
+      Keyboard.Reply(markup)
+    }
 
     private def makeHtmlMapsUrl(detail: BusStopDetails) =
       s"""<a href='https://www.google.com/maps/search/?api=1&query=${detail.position.lat},${detail.position.long}'>${detail.comune}: ${detail.location}</a>"""

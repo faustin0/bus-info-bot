@@ -93,7 +93,8 @@ object Scenarios {
                              text = msgData.body,
                              parseMode = Some(ParseMode.HTML),
                              disableWebPagePreview = Some(true)
-                           )
+                           ),
+                           keyboard = msgData.keyboard
                          )
                        }
     } yield ()
