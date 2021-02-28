@@ -5,9 +5,9 @@ import canoe.models.{ InlineKeyboardButton, InlineKeyboardMarkup, ParseMode }
 import dev.faustin0.bus.bot.domain.Emoji._
 import dev.faustin0.bus.bot.domain.{ FailedRequest, _ }
 
-trait CanoeTextMessage[M] {
+trait CanoeTextMessage[-M] {
   def body(a: M): String
-  def keyboard(callbackData: String): Keyboard
+  def keyboard(a: M, callbackData: String): Keyboard
 }
 
 //trait CanoeTextMessage[M] {
@@ -53,7 +53,7 @@ object CanoeMessageFormats {
             .mkString(System.lineSeparator())
       }
 
-    override def keyboard(callbackData: String): Keyboard = {
+    override def keyboard(a: NextBusResponse, callbackData: String): Keyboard = {
       val button = InlineKeyboardButton.callbackData(text = "update", cbd = callbackData)
       val markup = InlineKeyboardMarkup.singleButton(button)
       Keyboard.Inline(markup)
@@ -68,7 +68,7 @@ object CanoeMessageFormats {
       case MissingBusStop() => "Nessuna fermata trovata"
     }
 
-    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
+    override def keyboard(a: FailedRequest, callbackData: String): Keyboard = Keyboard.Unchanged
   }
 
   implicit object DetailsMessage extends CanoeTextMessage[BusStopDetailsResponse] {
@@ -87,7 +87,7 @@ object CanoeMessageFormats {
         .getOrElse(s"$BUS_STOP Nessuna fermata trovata")
     }
 
-    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
+    override def keyboard(a: BusStopDetailsResponse, callbackData: String): Keyboard = Keyboard.Unchanged
 
     private def makeHtmlMapsUrl(detail: BusStopDetails) =
       s"""<a href='https://www.google.com/maps/search/?api=1&query=${detail.position.lat},${detail.position.long}'>${detail.comune}: ${detail.location}</a>"""
@@ -103,14 +103,13 @@ object CanoeMessageFormats {
          |$CLOCK ${q.hour.getOrElse("in arrivo")}
          |""".stripMargin
 
-    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
-
+    override def keyboard(a: NextBusQuery, callbackData: String): Keyboard = Keyboard.Unchanged
   }
 
   implicit object MalformedMessage extends CanoeTextMessage[Malformed] {
     override def body(a: Malformed): String = "Errore nei dati inseriti,  /help ?"
 
-    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
+    override def keyboard(a: Malformed, callbackData: String): Keyboard = Keyboard.Unchanged
   }
 
   implicit object HelpMessage extends CanoeTextMessage[HelpResponse.type] {
@@ -125,30 +124,30 @@ object CanoeMessageFormats {
          |richiedere i prossimi bus in arrivo alla fermata 3345:
          |<code>3345</code>
          |
-         |richiedere i prossimi bus 28 in arrivo alla fermata 3345 per le ore 9.30:
+         |richiedere i prossimi bus 28 in arrivo alla fermata 3345 dalle ore 9.30:
          |<code>3345 28 9:30</code>
          |
          |informazioni generali sulla fermata Irnerio:
          |<code>Irnerio</code>
          |""".stripMargin
 
-    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
+    override def keyboard(a: HelpResponse.type, callbackData: String): Keyboard = Keyboard.Unchanged
   }
 
   implicit object StartMessage extends CanoeTextMessage[StartResponse] {
 
     override def body(a: StartResponse): String =
-      s"""Ciao ${a.user.firstName}! Benvenuto/a su TperBoBot!
+      s"""$WAVE Ciao ${a.user.firstName}! Benvenuto/a su TperBoBot!
          |
-         |Puoi chiedere un bus specificando:
+         |$BUS Puoi chiedere un bus specificando:
          |<code>numero_fermata numero_bus</code>
          |
-         |o conoscere i bus in arrivo in una fermata:
+         |$BUS_STOP oppure conoscere i bus in arrivo in una fermata:
          |<code>numero_fermata</code>
          |
-         |Per altri esempi puoi consulare la sezione "help" tramite il comando /help
+         |$QUESTION Per altri esempi puoi consulare la sezione "help" tramite il comando /help
          |""".stripMargin
 
-    override def keyboard(callbackData: String): Keyboard = Keyboard.Unchanged
+    override def keyboard(a: StartResponse, callbackData: String): Keyboard = Keyboard.Unchanged
   }
 }

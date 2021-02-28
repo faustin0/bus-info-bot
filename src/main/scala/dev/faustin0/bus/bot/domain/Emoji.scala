@@ -10,4 +10,6 @@ object Emoji {
   val POINT     = "\uD83D\uDCCC" //📌
   val NUM       = "\uD83D\uDD22" //🔢
   val PENCIL    = "\uD83D\uDCDD" //📝
+  val WAVE      = "\uD83D\uDC4B" //👋
+  val QUESTION  = "❓"            //❓
 }

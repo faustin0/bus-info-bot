@@ -176,7 +176,7 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
            |richiedere i prossimi bus in arrivo alla fermata 3345:
            |<code>3345</code>
            |
-           |richiedere i prossimi bus 28 in arrivo alla fermata 3345 per le ore 9.30:
+           |richiedere i prossimi bus 28 in arrivo alla fermata 3345 dalle ore 9.30:
            |<code>3345 28 9:30</code>
            |
            |informazioni generali sulla fermata Irnerio:
@@ -199,15 +199,15 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
 
     assert(
       actual.body ===
-        """Ciao expected_name! Benvenuto/a su TperBoBot!
+        """👋 Ciao expected_name! Benvenuto/a su TperBoBot!
           |
-          |Puoi chiedere un bus specificando:
+          |🚌 Puoi chiedere un bus specificando:
           |<code>numero_fermata numero_bus</code>
           |
-          |o conoscere i bus in arrivo in una fermata:
+          |🚏 oppure conoscere i bus in arrivo in una fermata:
           |<code>numero_fermata</code>
           |
-          |Per altri esempi puoi consulare la sezione "help" tramite il comando /help
+          |❓ Per altri esempi puoi consulare la sezione "help" tramite il comando /help
           |""".stripMargin
     )
   }

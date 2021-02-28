@@ -11,14 +11,19 @@ case class CanoeMessageData(
   keyboard: Keyboard = Keyboard.Unchanged
 )
 
+//case class CanoeMessageDataV2[M](
+//  content: MessageContent[M],
+//  keyboard: Keyboard = Keyboard.Unchanged
+//)
+
 object CanoeMessageAdapter {
 
-  implicit class CanoeAdapter[B](val b: B) extends AnyVal {
+  implicit class CanoeAdapter[B](private val b: B) extends AnyVal {
 
     def toCanoeMessage[C](callbackData: C)(implicit M: CanoeTextMessage[B], E: Encoder[C]): CanoeMessageData =
       CanoeMessageData(
         body = M.body(b),
-        keyboard = M.keyboard(callbackData.asJson.noSpaces)
+        keyboard = M.keyboard(b, callbackData.asJson.noSpaces)
       )
 
     def toCanoeMessage(implicit M: CanoeTextMessage[B]): CanoeMessageData =
@@ -30,7 +35,7 @@ object CanoeMessageAdapter {
     def toCanoeMessage(implicit M: CanoeTextMessage[FailedRequest]): CanoeMessageData =
       CanoeMessageData(
         body = M.body(b),
-        keyboard = M.keyboard(json"{}".asJson.noSpaces)
+        keyboard = M.keyboard(b, json"{}".asJson.noSpaces)
       )
   }
 }
