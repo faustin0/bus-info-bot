@@ -8,7 +8,7 @@ import canoe.models.outgoing.TextContent
 import canoe.models.{ CallbackButtonSelected, Chat, ParseMode, Update }
 import canoe.syntax._
 import cats.Monad
-import cats.effect.{ IO, Sync }
+import cats.effect.IO
 import cats.implicits._
 import dev.faustin0.bus.bot.domain.Codecs._
 import dev.faustin0.bus.bot.domain._

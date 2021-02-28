@@ -12,14 +12,15 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
 
   test("Should format a successful message with planned hour") {
 
-    val msg: NextBusResponse = IncomingBuses(
+    val msg = IncomingBuses(
       BusStop(303),
       Some(Bus("27")),
       List(
         NextBus(BusStop(303), Bus("27"), Planned(LocalTime.of(23, 0)), "additional info")
       )
     )
-    val actual               = msg.toCanoeMessage
+
+    val actual = msg.toCanoeMessage
 
     assert(actual.body === """|🚏 303
                               |🚌 27
@@ -31,14 +32,15 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
 
   test("Should format a successful message with satellite hour") {
 
-    val msg: NextBusResponse = IncomingBuses(
+    val msg = IncomingBuses(
       BusStop(303),
       Some(Bus("27")),
       List(
         NextBus(BusStop(303), Bus("27"), Satellite(LocalTime.of(23, 0)), "")
       )
     )
-    val actual               = msg.toCanoeMessage
+
+    val actual = msg.toCanoeMessage
 
     assert(actual.body === """|🚏 303
                               |🚌 27
@@ -49,7 +51,7 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
 
   test("Successful message should have an update inline keyboard") {
 
-    val msg: NextBusResponse = IncomingBuses(
+    val msg = IncomingBuses(
       BusStop(303),
       Some(Bus("27")),
       List(
@@ -57,7 +59,8 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
         NextBus(BusStop(303), Bus("27"), Satellite(LocalTime.of(23, 30)), "")
       )
     )
-    val actual               = msg.toCanoeMessage
+
+    val actual = msg.toCanoeMessage
 
     actual.keyboard match {
       case Inline(markup) =>
@@ -69,12 +72,13 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
 
   test("Should format a NextBusResponse message ") {
 
-    val msg: NextBusResponse = IncomingBuses(
+    val msg = IncomingBuses(
       BusStop(303),
       Some(Bus("27")),
       List(NextBus(BusStop(303), Bus("27"), Satellite(LocalTime.of(23, 0)), ""))
     )
-    val actual               = msg.toCanoeMessage
+
+    val actual = msg.toCanoeMessage
 
     assert(actual.body === """|🚏 303
                               |🚌 27
@@ -85,11 +89,12 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
 
   test("Should format an NoMoreBus message ") {
 
-    val msg: NextBusResponse = NoMoreBus(
+    val msg = NoMoreBus(
       BusStop(303),
       Some(Bus("85"))
     )
-    val actual               = msg.toCanoeMessage
+
+    val actual = msg.toCanoeMessage
 
     assert(actual.body === """|🚏 303
                               |🚌 85
@@ -119,7 +124,7 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
 
   test("Should format a BusStopDetails response message ") {
 
-    val msg    = BusStopDetailsResponse(
+    val msg = BusStopDetailsResponse(
       busStops = List(
         BusStopDetails(
           busStop = BusStop(303),
@@ -139,6 +144,7 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
         )
       )
     )
+
     val actual = msg.toCanoeMessage
     assert(
       actual.body ===
@@ -154,7 +160,8 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
   }
 
   test("Should format a BusStopDetails empty response message ") {
-    val msg    = BusStopDetailsResponse(Nil)
+    val msg = BusStopDetailsResponse(Nil)
+
     val actual = msg.toCanoeMessage
     assert(
       actual.body === """🚏 Nessuna fermata trovata"""

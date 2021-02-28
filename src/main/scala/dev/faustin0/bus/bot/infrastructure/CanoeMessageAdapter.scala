@@ -29,13 +29,4 @@ object CanoeMessageAdapter {
     def toCanoeMessage(implicit M: CanoeTextMessage[B]): CanoeMessageData =
       toCanoeMessage(json"{}")
   }
-
-  implicit class CanoeErrAdapter(val b: FailedRequest) extends AnyVal {
-
-    def toCanoeMessage(implicit M: CanoeTextMessage[FailedRequest]): CanoeMessageData =
-      CanoeMessageData(
-        body = M.body(b),
-        keyboard = M.keyboard(b, json"{}".asJson.noSpaces)
-      )
-  }
 }
