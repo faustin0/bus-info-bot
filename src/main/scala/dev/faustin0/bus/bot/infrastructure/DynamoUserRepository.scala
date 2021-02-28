@@ -11,7 +11,7 @@ import software.amazon.awssdk.services.dynamodb.model.{ AttributeValue, GetItemR
 
 import java.util.concurrent.{ CancellationException, CompletableFuture }
 import java.util.{ Map => JavaMap }
-import scala.jdk.CollectionConverters.MapHasAsScala
+import scala.jdk.CollectionConverters._
 
 class DynamoUserRepository private (private val client: DynamoDbAsyncClient)(implicit
   log: Logger[IO],
@@ -23,18 +23,13 @@ class DynamoUserRepository private (private val client: DynamoDbAsyncClient)(imp
       .builder()
       .tableName(Table.name)
       .item(
-        JavaMap.of(
-          Table.id,
-          attribute(_.n(String.valueOf(user.id))),
-          Table.firstName,
-          attribute(_.s(user.firstName)),
-          Table.lastName,
-          attribute(_.s(user.lastName)),
-          Table.userName,
-          attribute(_.s(user.userName)),
-          Table.language,
-          attribute(_.s(user.language.getOrElse("")))
-        )
+        Map(
+          Table.id        -> attribute(_.n(String.valueOf(user.id))),
+          Table.firstName -> attribute(_.s(user.firstName)),
+          Table.lastName  -> attribute(_.s(user.lastName)),
+          Table.userName  -> attribute(_.s(user.userName)),
+          Table.language  -> attribute(_.s(user.language.getOrElse("")))
+        ).asJava
       )
       .build()
 

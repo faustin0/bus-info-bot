@@ -65,7 +65,7 @@ class CanoeTextMessageKeyboardTest extends AnyFunSuite with Inside with Matchers
 
     val actual = msg.toCanoeMessage
     inside(actual.keyboard.replyMarkup) { case Some(keyboard) =>
-      inside(keyboard) { case ReplyKeyboardMarkup(Seq(Seq(b1), Seq(b2)), None, None, None) =>
+      inside(keyboard) { case ReplyKeyboardMarkup(Seq(Seq(b1), Seq(b2)), Some(true), Some(true), None) =>
         b1.text shouldBe "303"
         b2.text shouldBe "304"
       }
