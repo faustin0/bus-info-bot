@@ -91,7 +91,7 @@ object DynamoUserRepository {
               case ex                       => callback(Left(ex))
             }
           )
-          IO.delay(cf.cancel(true))
+          IO.delay(cf.cancel(true)).as(())
         }
       }
       computation.guarantee(cs.shift)
@@ -101,24 +101,25 @@ object DynamoUserRepository {
   def apply(dynamoClient: DynamoDbAsyncClient)(implicit cs: ContextShift[IO], l: Logger[IO]): UserRepository[IO] =
     new DynamoUserRepository(dynamoClient)
 
-  def makeFromAws(implicit cs: ContextShift[IO], l: Logger[IO]): Resource[IO, UserRepository[IO]] =
-    createDynamoRepo {
+  def makeResource(implicit cs: ContextShift[IO], l: Logger[IO]): Resource[IO, UserRepository[IO]] = {
+    val clientFromAWS = IO(
       DynamoDbAsyncClient
         .builder()
         .build()
-    }
-
-  def makeFromEnv(implicit cs: ContextShift[IO], l: Logger[IO]): Resource[IO, UserRepository[IO]] =
-    createDynamoRepo {
+    )
+    val clientFromEnv = IO(
       DynamoDbAsyncClient
         .builder()
         .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
         .region(Region.EU_CENTRAL_1)
         .build()
-    }
+    )
 
-  private def createDynamoRepo(client: => DynamoDbAsyncClient)(implicit cs: ContextShift[IO], l: Logger[IO]) =
     Resource
-      .fromAutoCloseable(IO(client))
+      .fromAutoCloseable(clientFromAWS.handleErrorWith { e =>
+        l.warn(e)("failed to create dynamoClient from AWS, trying from env...") *>
+          clientFromEnv
+      })
       .map(DynamoUserRepository(_))
+  }
 }

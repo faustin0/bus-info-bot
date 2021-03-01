@@ -1,6 +1,6 @@
 package dev.faustin0.bus.bot.infrastructure
 
-import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, IO, Resource, Sync }
+import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, IO, Resource }
 import dev.faustin0.bus.bot.domain.{ NextBusResponse, _ }
 import dev.faustin0.bus.bot.infrastructure.JsonSchema.{ BusInfoJson, BusStopDetailsJson }
 import io.circe.Decoder

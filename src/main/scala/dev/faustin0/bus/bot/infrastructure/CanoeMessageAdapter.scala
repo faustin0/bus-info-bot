@@ -1,7 +1,6 @@
 package dev.faustin0.bus.bot.infrastructure
 
 import canoe.api.models.Keyboard
-import dev.faustin0.bus.bot.domain.FailedRequest
 import io.circe.Encoder
 import io.circe.literal.JsonStringContext
 import io.circe.syntax._
@@ -10,11 +9,6 @@ case class CanoeMessageData(
   body: String,
   keyboard: Keyboard = Keyboard.Unchanged
 )
-
-//case class CanoeMessageDataV2[M](
-//  content: MessageContent[M],
-//  keyboard: Keyboard = Keyboard.Unchanged
-//)
 
 object CanoeMessageAdapter {
 

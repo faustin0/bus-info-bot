@@ -1,7 +1,7 @@
 package dev.faustin0.bus.bot.infrastructure
 
 import canoe.api.models.Keyboard
-import canoe.models.{ InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ParseMode, ReplyKeyboardMarkup }
+import canoe.models._
 import dev.faustin0.bus.bot.domain.Emoji._
 import dev.faustin0.bus.bot.domain.{ FailedRequest, _ }
 
@@ -10,14 +10,9 @@ trait CanoeTextMessage[-M] {
   def keyboard(a: M, callbackData: String): Keyboard
 }
 
-//trait CanoeTextMessage[M] {
-//  def body(a: M): TextContent
-//  def keyboard(callbackData: String): Keyboard
-//}
-
 object CanoeMessageFormats {
 
-  private lazy val HTML = Some(ParseMode.HTML)
+//  private lazy val HTML = Some(ParseMode.HTML)
 
   implicit object NextBusMessage extends CanoeTextMessage[NextBusResponse] {
 
@@ -30,7 +25,7 @@ object CanoeMessageFormats {
               |$CLOCK Nessun' altra corsa di $requestedBusCode per la fermata ${requestedStop.code}
               |""".stripMargin
 
-        case IncomingBuses(requestedStop, requestedBus, info) =>
+        case IncomingBuses(_, _, info) =>
           info.map { nb =>
             val msg =
               s"""|$BUS_STOP ${nb.busStop.code}
