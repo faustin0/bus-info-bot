@@ -1,11 +1,12 @@
 .dockerignore
 .gitignore
 .github
-*.class
+.git
+**/*.class
 *.log
 
 **/.idea
-**/target
+target/
 
 Dockerfile
 LICENSE

@@ -12,12 +12,12 @@ import scala.concurrent.ExecutionContext
 
 object Resources {
 
-  private val telegramToken = sys.env("TOKEN")
+  private val telegramToken = IO(sys.env("TOKEN"))
   private val ec            = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 
   def create(implicit cs: ContextShift[IO], logger: Logger[IO]): Resource[IO, Resources] =
     for {
-      telegramClient <- TelegramClient[IO](telegramToken, ec)
+      telegramClient <- Resource.liftF(telegramToken).flatMap(t => TelegramClient[IO](t, ec))
       busInfoApi     <- Http4sBusInfoClient.makeResource("http://bus-app.fware.net/", ec)
       userRepo       <- DynamoUserRepository.makeResource
       resources       = Resources(
