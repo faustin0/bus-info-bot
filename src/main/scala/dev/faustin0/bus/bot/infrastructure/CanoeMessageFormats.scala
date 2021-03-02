@@ -49,8 +49,9 @@ object CanoeMessageFormats {
       }
 
     override def keyboard(a: NextBusResponse, callbackData: String): Keyboard = {
-      val button = InlineKeyboardButton.callbackData(text = "update", cbd = callbackData)
-      val markup = InlineKeyboardMarkup.singleButton(button)
+      val updateBtn = InlineKeyboardButton.callbackData(text = "update", cbd = callbackData)
+      val followBtn = InlineKeyboardButton.callbackData(text = "follow", cbd = callbackData)
+      val markup    = InlineKeyboardMarkup.singleRow(Seq(updateBtn, followBtn))
       Keyboard.Inline(markup)
     }
   }

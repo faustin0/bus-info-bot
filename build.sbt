@@ -26,7 +26,8 @@ lazy val commonSettings = Seq(
     "-unchecked",
     "-language:postfixOps",
     "-language:higherKinds",
-    "-Xfatal-warnings"
+    "-Xfatal-warnings",
+    "-Ymacro-annotations"
   ),
   libraryDependencies ++= dependencies ++ testDependencies
 )
