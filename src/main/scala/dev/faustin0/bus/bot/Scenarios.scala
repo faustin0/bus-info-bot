@@ -100,17 +100,17 @@ object Scenarios {
     } yield ()
 
   private def nextBusScenario[F[_]: TelegramClient: Monad](
-    q: NextBusQuery,
+    query: NextBusQuery,
     chat: Chat,
     busInfoClient: BusInfoApi[F]
   ): Scenario[F, Unit] =
     for {
-      waitingMsg     <- Scenario.eval(chat.send(q.toCanoeMessage.body))
+      waitingMsg     <- Scenario.eval(chat.send(query.toCanoeMessage.body))
       _              <- Scenario.eval(chat.setAction(Typing))
-      requestOutcome <- Scenario.eval(busInfoClient.getNextBuses(q))
+      requestOutcome <- Scenario.eval(busInfoClient.getNextBuses(query))
       msgData         = requestOutcome.fold(
                           failure => failure.toCanoeMessage,
-                          success => success.toCanoeMessage(q)
+                          success => success.toCanoeMessage(query)
                         )
       _              <- Scenario.eval {
                           for {

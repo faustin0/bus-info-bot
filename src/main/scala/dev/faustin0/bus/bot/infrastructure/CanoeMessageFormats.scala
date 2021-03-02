@@ -148,9 +148,17 @@ object CanoeMessageFormats {
          |
          |$BUS Puoi chiedere un bus specificando:
          |<code>numero_fermata numero_bus</code>
+         |<code>303 28</code>
          |
          |$BUS_STOP oppure conoscere i bus in arrivo in una fermata:
          |<code>numero_fermata</code>
+         |<code>303</code>
+         |
+         |$BUS_STOP puoi inoltre cercare il numero della fermata e altre informazioni, dato il suo nome:
+         |<code>nome_fermata</code>
+         |<code>Irnerio</code>
+         |
+         |Per qualsiasi problema, idea o suggerimento puoi contattarmi @FaustoDiNatale
          |
          |$QUESTION Per altri esempi puoi consulare la sezione "help" tramite il comando /help
          |""".stripMargin
