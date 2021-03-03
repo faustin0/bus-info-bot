@@ -99,14 +99,15 @@ object Scenarios {
                        }
     } yield ()
 
-  private def nextBusScenario[F[_]: TelegramClient: Monad](
+  private def nextBusScenario(
     query: NextBusQuery,
     chat: Chat,
-    busInfoClient: BusInfoApi[F]
-  ): Scenario[F, Unit] =
+    busInfoClient: BusInfoApi[IO]
+  )(implicit tc: TelegramClient[IO]): Scenario[IO, Unit] =
     for {
       waitingMsg     <- Scenario.eval(chat.send(query.toCanoeMessage.body))
       _              <- Scenario.eval(chat.setAction(Typing))
+      _              <- Scenario.eval(logger.info(s"nextBusScenario"))
       requestOutcome <- Scenario.eval(busInfoClient.getNextBuses(query))
       msgData         = requestOutcome.fold(
                           failure => failure.toCanoeMessage,
@@ -117,7 +118,7 @@ object Scenarios {
                             _ <- waitingMsg.editText(msgData.body)
                             _ <- msgData.keyboard match { //todo clean up this mess
                                    case Inline(markup) => waitingMsg.editReplyMarkup(Some(markup))
-                                   case _              => Monad[F].pure(Left(false))
+                                   case _              => IO.pure(Left(false))
                                  }
                           } yield ()
                         }

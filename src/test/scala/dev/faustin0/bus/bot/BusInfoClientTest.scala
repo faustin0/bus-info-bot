@@ -9,6 +9,7 @@ import io.circe.literal.JsonStringContext
 import org.http4s.Uri
 import org.http4s.client.{ Client, JavaNetClientBuilder }
 import org.mockserver.client.MockServerClient
+import org.mockserver.matchers.Times
 import org.mockserver.model.HttpRequest.request
 import org.mockserver.model.HttpResponse.response
 import org.scalatest.freespec.AsyncFreeSpec
@@ -41,7 +42,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
             request()
               .withPath("/bus-stops/303")
               .withMethod("GET")
-              .withQueryStringParameter("bus", "28")
+              .withQueryStringParameter("bus", "28"),
+            Times.once()
           )
           .respond(
             response().withBody(
@@ -87,7 +89,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
               .withPath("/bus-stops/303")
               .withMethod("GET")
               .withQueryStringParameter("bus", "28")
-              .withQueryStringParameter("hour", "16:30")
+              .withQueryStringParameter("hour", "16:30"),
+            Times.once()
           )
           .respond(
             response().withBody(
@@ -131,7 +134,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
           .when(
             request()
               .withPath("/bus-stops/2023")
-              .withMethod("GET")
+              .withMethod("GET"),
+            Times.once()
           )
           .respond(
             response()
@@ -165,7 +169,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
             request()
               .withPath("/bus-stops/2022")
               .withMethod("GET")
-              .withQueryStringParameter("bus", "wrong")
+              .withQueryStringParameter("bus", "wrong"),
+            Times.once()
           )
           .respond(
             response()
@@ -199,7 +204,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
             request()
               .withPath("/bus-stops/303")
               .withMethod("GET")
-              .withQueryStringParameter("bus", "85")
+              .withQueryStringParameter("bus", "85"),
+            Times.once()
           )
           .respond(
             response()
@@ -224,7 +230,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
             request()
               .withPath("/bus-stops")
               .withQueryStringParameter("name", "stazione centrale")
-              .withMethod("GET")
+              .withMethod("GET"),
+            Times.once()
           )
           .respond(
             response()
