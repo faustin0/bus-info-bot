@@ -2,11 +2,13 @@ package dev.faustin0.bus.bot.domain
 
 import cats.implicits._
 import io.circe.Decoder.Result
-import io.circe.generic.semiauto.deriveDecoder
+import io.circe._
+import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 import io.circe.parser._
-import io.circe.{ Decoder, DecodingFailure, HCursor }
+import io.circe.syntax.EncoderOps
 
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 final case class Callback(`type`: CallbackType, body: Payload)
 
@@ -33,6 +35,9 @@ object Callback {
   def fromString(data: String)(implicit D: Decoder[Callback]): Either[IllegalArgumentException, Callback] =
     decode[Callback](data)
       .leftMap(e => new IllegalArgumentException(s"Failure decoding callback $data", e))
+
+  def toJsonString(callback: Callback)(implicit E: Encoder[Callback]): String =
+    E(callback).noSpaces
 
 }
 
@@ -76,5 +81,44 @@ case object decodersInstances {
       callbackType <- typeDecoder(cursor)
       payload      <- payloadDecoder(cursor)
     } yield Callback(callbackType, payload)
+
+}
+
+object encodersInstances {
+  import io.circe.literal.JsonStringContext
+
+  private lazy val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+  implicit lazy val updateCallbackEncoder: Encoder[UpdateCallback] = deriveEncoder
+  implicit lazy val followCallbackEncoder: Encoder[FollowCallback] = deriveEncoder
+
+  implicit lazy val timeEncoder: Encoder[LocalTime] = (a: LocalTime) => {
+    a.format(timeFormatter).asJson
+  }
+
+  implicit object typeEncoder extends Encoder[CallbackType] {
+
+    override def apply(callbackType: CallbackType): Json = callbackType match {
+      case UpdateType => Json.fromString("updateRequest")
+      case FollowType => Json.fromString("followRequest")
+    }
+  }
+
+  implicit def payloadEncoder: Encoder[Payload] = {
+    case payload: FollowCallback => payload.asJson.dropNullValues
+    case payload: UpdateCallback => payload.asJson.dropNullValues
+  }
+
+  implicit def CallbackEncoder(implicit
+    typeDecoder: Encoder[CallbackType],
+    payloadDecoder: Encoder[Payload]
+  ): Encoder[Callback] = { (callback: Callback) =>
+    typeDecoder(callback.`type`)
+    payloadDecoder(callback.body)
+    json"""{
+            "type": ${typeDecoder(callback.`type`)},
+            "body": ${payloadDecoder(callback.body)}
+          }"""
+  }
 
 }

@@ -36,9 +36,6 @@ object Dependencies {
     "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
     "org.mock-server" % "mockserver-client-java"          % "5.11.2"                   % Test,
     "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.5.1"                    % Test,
-    "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test,
-    "io.circe"       %% "circe-core"                      % "0.13.0"                   % Test,
-    "io.circe"       %% "circe-parser"                    % "0.13.0"                   % Test,
-    "io.circe"       %% "circe-generic"                   % "0.13.0"                   % Test
+    "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
   )
 }
