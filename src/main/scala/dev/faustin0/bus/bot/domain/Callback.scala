@@ -12,9 +12,27 @@ import java.time.format.DateTimeFormatter
 
 final case class Callback(`type`: CallbackType, body: Payload)
 
-sealed trait CallbackType extends Product with Serializable
-case object UpdateType    extends CallbackType
-case object FollowType    extends CallbackType
+sealed trait CallbackType extends Product with Serializable {
+  val value: String
+}
+
+case object UpdateType extends CallbackType {
+  override val value = "updateRequest"
+}
+
+case object FollowType extends CallbackType {
+  override val value = "followRequest"
+}
+
+object CallbackType {
+
+  def fromString(t: String): Either[IllegalArgumentException, CallbackType] =
+    t match {
+      case UpdateType.value => Right(UpdateType)
+      case FollowType.value => Right(FollowType)
+      case _                => Left(new IllegalArgumentException(s"Invalid callback type '$t'"))
+    }
+}
 
 sealed trait Payload extends Product with Serializable
 
@@ -48,23 +66,13 @@ case object decodersInstances {
 
   implicit object typeDecoder extends Decoder[CallbackType] {
 
-    private val supportedTypes = Map(
-      "updateRequest" -> UpdateType,
-      "followRequest" -> FollowType
-    )
-
     def apply(c: HCursor): Result[CallbackType] =
       c.downField("type")
         .as[String]
         .flatMap(t =>
-          supportedTypes
-            .get(t)
-            .toRight(
-              DecodingFailure(
-                s"Invalid callback type '$t', supported types: ${supportedTypes.keys}",
-                c.history
-              )
-            )
+          CallbackType
+            .fromString(t)
+            .leftMap(e => DecodingFailure.fromThrowable(e, c.history))
         )
   }
 
@@ -97,11 +105,7 @@ object encodersInstances {
   }
 
   implicit object typeEncoder extends Encoder[CallbackType] {
-
-    override def apply(callbackType: CallbackType): Json = callbackType match {
-      case UpdateType => Json.fromString("updateRequest")
-      case FollowType => Json.fromString("followRequest")
-    }
+    override def apply(callbackType: CallbackType): Json = Json.fromString(callbackType.value)
   }
 
   implicit def payloadEncoder: Encoder[Payload] = {
@@ -113,12 +117,12 @@ object encodersInstances {
     typeDecoder: Encoder[CallbackType],
     payloadDecoder: Encoder[Payload]
   ): Encoder[Callback] = { (callback: Callback) =>
-    typeDecoder(callback.`type`)
-    payloadDecoder(callback.body)
-    json"""{
+    json"""
+          {
             "type": ${typeDecoder(callback.`type`)},
             "body": ${payloadDecoder(callback.body)}
-          }"""
+          }
+          """
   }
 
 }
