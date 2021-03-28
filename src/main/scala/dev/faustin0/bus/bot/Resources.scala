@@ -17,7 +17,7 @@ object Resources {
 
   def create(implicit cs: ContextShift[IO], logger: Logger[IO]): Resource[IO, Resources] =
     for {
-      telegramClient <- Resource.liftF(telegramToken).flatMap(t => TelegramClient[IO](t, ec))
+      telegramClient <- Resource.eval(telegramToken).flatMap(t => TelegramClient[IO](t, ec))
       busInfoApi     <- Http4sBusInfoClient.makeResource("http://bus-app.fware.net/", ec)
       userRepo       <- DynamoUserRepository.makeResource
       resources       = Resources(
