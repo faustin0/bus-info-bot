@@ -30,7 +30,7 @@ object Dependencies {
   )
 
   lazy val testDependencies = Seq(
-    "org.scalatest"  %% "scalatest"                       % "3.2.6"                    % Test,
+    "org.scalatest"  %% "scalatest"                       % "3.2.7"                    % Test,
     "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-mockserver" % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
