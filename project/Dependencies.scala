@@ -4,7 +4,7 @@ object Dependencies {
 //  val http4sVersion              = "0.21.3"
   val http4sVersion              = "0.21.20"
   val testcontainersScalaVersion = "0.39.3"
-  val catsVersion                = "2.4.0"
+  val catsVersion                = "2.4.1"
   val kindProjectorV             = "0.11.3"
   val betterMonadicForV          = "0.3.1"
   val circeVersion               = "0.13.0"
@@ -12,7 +12,7 @@ object Dependencies {
   val dynamodbVersion            = "2.16.29"
   val logbackVersion             = "1.2.3"
   val canoeVersion               = "0.5.1"
-  val fs2Version                 = "2.5.0"
+  val fs2Version                 = "2.5.4"
 
   lazy val dependencies = Seq(
     "org.typelevel"         %% "cats-effect"         % catsVersion,
