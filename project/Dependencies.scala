@@ -9,7 +9,7 @@ object Dependencies {
   val betterMonadicForV          = "0.3.1"
   val circeVersion               = "0.13.0"
   val log4catsVersion            = "1.1.1"
-  val dynamodbVersion            = "2.16.59"
+  val dynamodbVersion            = "2.16.68"
   val logbackVersion             = "1.2.3"
   val canoeVersion               = "0.5.1"
   val fs2Version                 = "2.5.5"
