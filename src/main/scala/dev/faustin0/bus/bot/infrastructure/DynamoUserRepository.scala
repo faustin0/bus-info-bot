@@ -1,6 +1,6 @@
 package dev.faustin0.bus.bot.infrastructure
 
-import cats.effect.{ ContextShift, IO, Resource }
+import cats.effect.{ IO, Resource }
 import dev.faustin0.bus.bot.domain.{ User, UserRepository }
 import dev.faustin0.bus.bot.infrastructure.DynamoUserRepository.{ JavaFutureOps, Table }
 import io.chrisdavenport.log4cats.Logger
@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.dynamodb.model.{ AttributeValue, GetItemR
 import java.util.concurrent.{ CancellationException, CompletableFuture }
 import java.util.{ Map => JavaMap }
 import scala.jdk.CollectionConverters._
+import cats.effect.Spawn
 
 class DynamoUserRepository private (private val client: DynamoDbAsyncClient)(implicit
   log: Logger[IO],
@@ -81,7 +82,7 @@ object DynamoUserRepository {
 
   implicit class JavaFutureOps[T](val unevaluatedCF: IO[CompletableFuture[T]]) extends AnyVal {
 
-    def fromCompletable(implicit cs: ContextShift[IO]): IO[T] = {
+    def fromCompletable: IO[T] = {
       val computation: IO[T] = unevaluatedCF.flatMap { cf =>
         IO.cancelable { callback =>
           cf.handle((res: T, err: Throwable) =>
@@ -94,14 +95,14 @@ object DynamoUserRepository {
           IO.delay(cf.cancel(true)).as(())
         }
       }
-      computation.guarantee(cs.shift)
+      computation.guarantee(Spawn[IO].cede)
     }
   }
 
-  def apply(dynamoClient: DynamoDbAsyncClient)(implicit cs: ContextShift[IO], l: Logger[IO]): UserRepository[IO] =
+  def apply(dynamoClient: DynamoDbAsyncClient)(implicit l: Logger[IO]): UserRepository[IO] =
     new DynamoUserRepository(dynamoClient)
 
-  def makeResource(implicit cs: ContextShift[IO], l: Logger[IO]): Resource[IO, UserRepository[IO]] = {
+  def makeResource(implicit l: Logger[IO]): Resource[IO, UserRepository[IO]] = {
     val clientFromAWS = IO(
       DynamoDbAsyncClient
         .builder()
