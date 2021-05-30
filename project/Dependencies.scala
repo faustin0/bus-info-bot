@@ -9,7 +9,7 @@ object Dependencies {
   val betterMonadicForV          = "0.3.1"
   val circeVersion               = "0.14.1"
   val log4catsVersion            = "1.1.1"
-  val dynamodbVersion            = "2.16.68"
+  val dynamodbVersion            = "2.16.74"
   val logbackVersion             = "1.2.3"
   val canoeVersion               = "0.5.1"
   val fs2Version                 = "2.5.5"
@@ -35,7 +35,7 @@ object Dependencies {
     "com.dimafeng"   %% "testcontainers-scala-mockserver" % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
     "org.mock-server" % "mockserver-client-java"          % "5.11.2"                   % Test,
-    "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.5.3"                    % Test,
+    "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.5.4"                    % Test,
     "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
   )
 }
