@@ -1,6 +1,6 @@
 package dev.faustin0.bus.bot.infrastructure
 
-import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, IO, Resource }
+import cats.effect.{ ConcurrentEffect, IO, Resource }
 import dev.faustin0.bus.bot.domain.{ NextBusResponse, _ }
 import dev.faustin0.bus.bot.infrastructure.JsonSchema.{ BusInfoJson, BusStopDetailsJson }
 import io.circe.Decoder
@@ -150,7 +150,7 @@ object Http4sBusInfoClient {
   def make(
     host: String,
     executionContext: ExecutionContext
-  )(implicit ce: ContextShift[IO]): Http4sBusInfoClient = {
+  ): Http4sBusInfoClient = {
     val blocker      = Blocker.liftExecutionContext(executionContext)
     val httpClient   = JavaNetClientBuilder[IO](blocker).create
     val loggedClient = ClientLogger(logHeaders = false, logBody = true)(httpClient)
