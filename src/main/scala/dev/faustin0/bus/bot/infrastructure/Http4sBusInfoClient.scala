@@ -8,7 +8,7 @@ import io.circe.generic.semiauto.deriveDecoder
 import org.http4s.Method.GET
 import org.http4s._
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
-import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client.middleware.{ Logger => ClientLogger }
 import org.http4s.client.{ Client, JavaNetClientBuilder }
 import org.http4s.headers.{ `Content-Type`, Accept }
