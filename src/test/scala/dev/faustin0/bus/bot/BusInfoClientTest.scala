@@ -1,7 +1,7 @@
 package dev.faustin0.bus.bot
 
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.effect.{ Blocker, IO, Resource }
+import cats.effect.{ IO, Resource }
 import com.dimafeng.testcontainers.{ ForAllTestContainer, MockServerContainer }
 import dev.faustin0.bus.bot.domain._
 import dev.faustin0.bus.bot.infrastructure.Http4sBusInfoClient
