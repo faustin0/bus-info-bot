@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
 //  val http4sVersion              = "0.21.3"
-  val catsVersion                = "2.5.3"
+  val catsVersion                = "3.2.2"
   val http4sVersion              = "0.21.25"
   val testcontainersScalaVersion = "0.39.5"
   val kindProjectorV             = "0.13.0"
