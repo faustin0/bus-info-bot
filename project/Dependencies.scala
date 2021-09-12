@@ -10,7 +10,7 @@ object Dependencies {
   val circeVersion               = "0.14.1"
   val log4catsVersion            = "1.1.1"
   val dynamodbVersion            = "2.17.19"
-  val logbackVersion             = "1.2.5"
+  val logbackVersion             = "1.2.6"
   val canoeVersion               = "0.5.1"
   val fs2Version                 = "2.5.9"
 
