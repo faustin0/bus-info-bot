@@ -58,9 +58,9 @@ object CanoeMessageFormats {
   implicit object FailMessage extends CanoeTextMessage[FailedRequest] {
 
     override def body(a: FailedRequest): String = a match {
-      case GeneralFailure() => "Errore nella gestione della richiesta"
-      case BadRequest()     => "Errore nei dati inseriti, /help?"
-      case MissingBusStop() => "Nessuna fermata trovata"
+      case GeneralFailure => "Errore nella gestione della richiesta"
+      case BadRequest    => "Errore nei dati inseriti, /help?"
+      case MissingBusStop => "Nessuna fermata trovata"
     }
 
     override def keyboard(a: FailedRequest, callbackData: String): Keyboard = Keyboard.Unchanged

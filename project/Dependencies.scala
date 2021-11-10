@@ -15,6 +15,7 @@ object Dependencies {
   val fs2Version                 = "2.5.10"
 
   lazy val dependencies = Seq(
+    "com.lihaoyi"           %% "fastparse"           % "2.3.3",
     "org.typelevel"         %% "cats-effect"         % catsVersion,
     "org.http4s"            %% "http4s-dsl"          % http4sVersion,
     "org.http4s"            %% "http4s-blaze-client" % http4sVersion,
@@ -30,12 +31,14 @@ object Dependencies {
   )
 
   lazy val testDependencies = Seq(
-    "org.scalatest"  %% "scalatest"                       % "3.2.10"                    % Test,
-    "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion % Test,
-    "com.dimafeng"   %% "testcontainers-scala-mockserver" % testcontainersScalaVersion % Test,
-    "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
-    "org.mock-server" % "mockserver-client-java"          % "5.11.2"                   % Test,
-    "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.5.4"                    % Test,
-    "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
-  )
+    "org.scalatest"  %% "scalatest"                       % "3.2.10",
+    "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion,
+    "com.dimafeng"   %% "testcontainers-scala-mockserver" % testcontainersScalaVersion,
+    "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion,
+    "org.mock-server" % "mockserver-client-java"          % "5.11.2",
+    "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.5.4",
+    "org.typelevel"  %% "cats-effect-laws"                % catsVersion,
+    "org.scalacheck" %% "scalacheck"                      % "1.14.1"
+  ).map(_ % Test)
+
 }

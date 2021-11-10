@@ -24,7 +24,7 @@ class Http4sBusInfoClient(private val client: Client[IO], uri: Uri) extends BusI
   override def getNextBuses(query: NextBusQuery): IO[Either[FailedRequest, NextBusResponse]] = {
     val req = Request[IO](
       method = GET,
-      uri = (uri / "bus-stops" / query.stop)
+      uri = (uri / "bus-stops" / query.stop.toString)
         .withOptionQueryParam("bus", query.bus)
         .withOptionQueryParam("hour", query.hour.map(_.format(dateTimeFormatter))),
       headers = Headers.of(
@@ -57,10 +57,10 @@ class Http4sBusInfoClient(private val client: Client[IO], uri: Uri) extends BusI
                 )
             }
             .map(parsedResp => Right(parsedResp))
-            .getOrElse(Left(GeneralFailure()))
-        case Status.NotFound   => IO.pure(Left(MissingBusStop()))
-        case Status.BadRequest => IO.pure(Left(BadRequest()))
-        case _                 => IO.pure(Left(GeneralFailure()))
+            .getOrElse(Left(GeneralFailure))
+        case Status.NotFound   => IO.pure(Left(MissingBusStop))
+        case Status.BadRequest => IO.pure(Left(BadRequest))
+        case _                 => IO.pure(Left(GeneralFailure))
       }
     }
   }
@@ -92,10 +92,10 @@ class Http4sBusInfoClient(private val client: Client[IO], uri: Uri) extends BusI
               )
             )
             .map(details => Right(BusStopDetailsResponse(details)))
-            .getOrElse(Left(GeneralFailure()))
-        case Status.NotFound   => IO.pure(Left(MissingBusStop()))
-        case Status.BadRequest => IO.pure(Left(BadRequest()))
-        case _                 => IO.pure(Left(GeneralFailure()))
+            .getOrElse(Left(GeneralFailure))
+        case Status.NotFound   => IO.pure(Left(MissingBusStop))
+        case Status.BadRequest => IO.pure(Left(BadRequest))
+        case _                 => IO.pure(Left(GeneralFailure))
       }
     }
   }
@@ -130,6 +130,7 @@ private object JsonSchema {
     lat: Float,
     long: Float
   )
+
 }
 
 object Http4sBusInfoClient {
@@ -157,4 +158,5 @@ object Http4sBusInfoClient {
 
     new Http4sBusInfoClient(loggedClient, Uri.unsafeFromString(host))
   }
+
 }

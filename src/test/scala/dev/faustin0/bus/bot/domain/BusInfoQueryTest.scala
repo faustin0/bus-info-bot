@@ -1,11 +1,11 @@
 package dev.faustin0.bus.bot.domain
 
-import java.time.LocalTime
-
 import org.scalatest.Inside
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks._
+
+import java.time.LocalTime
 
 class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
 
@@ -19,7 +19,7 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
 
   forAll(fullQueries) { (text: String) =>
     test(s"should extract a full query from a text message $text") {
-      val expected = NextBusQuery("303", Some("24"), Some(LocalTime.of(14, 30)))
+      val expected = NextBusQuery(303, Some("24"), Some(LocalTime.of(14, 30)))
 
       val query = BusInfoQuery.fromText(text)
 
@@ -29,7 +29,7 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
   }
 
   test("format single digit hour (9:30)") {
-    val expected = NextBusQuery("3345", Some("28"), Some(LocalTime.of(9, 30)))
+    val expected = NextBusQuery(3345, Some("28"), Some(LocalTime.of(9, 30)))
 
     val query = BusInfoQuery.fromText("3345 28 9:30")
 
@@ -56,7 +56,7 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
 
   test("should extract a partial query from a text message with missing bus and hour") {
     val textMsg  = "303"
-    val expected = NextBusQuery("303", None, None)
+    val expected = NextBusQuery(303, None, None)
 
     val query = BusInfoQuery.fromText(textMsg)
 
@@ -73,4 +73,5 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
     assert(query === expected)
 
   }
+
 }

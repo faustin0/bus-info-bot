@@ -104,20 +104,20 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
 
   test("Should format a BadRequest message, with a help hint") {
 
-    val actual = BadRequest().toCanoeMessage
+    val actual = BadRequest.toCanoeMessage
 
     assert(actual.body === "Errore nei dati inseriti, /help?")
   }
 
   test("Should format a GeneralFailure message") {
-    val actual = GeneralFailure().toCanoeMessage
+    val actual = GeneralFailure.toCanoeMessage
 
     assert(actual.body === "Errore nella gestione della richiesta")
   }
 
   test("Should format a MissingBusStop message") {
 
-    val actual = MissingBusStop().toCanoeMessage
+    val actual = MissingBusStop.toCanoeMessage
 
     assert(actual.body === "Nessuna fermata trovata")
   }

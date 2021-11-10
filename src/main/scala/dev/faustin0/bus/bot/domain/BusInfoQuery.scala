@@ -1,16 +1,16 @@
 package dev.faustin0.bus.bot.domain
 
-import cats.implicits._
-import io.circe.{ Decoder, Encoder }
 import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
+import io.circe.{ Decoder, Encoder }
 
 import java.time.LocalTime
 import java.time.format.{ DateTimeFormatter, DateTimeFormatterBuilder }
+import scala.util.Try
 
 sealed trait BusInfoQuery extends Product with Serializable
 
 final case class NextBusQuery( //TODO change name
-  stop: String,                //fixme this should be a int
+  stop: Int,
   bus: Option[String] = None,
   hour: Option[LocalTime] = None
 ) extends BusInfoQuery
@@ -27,6 +27,7 @@ case object BusInfoQuery {
     .appendOptional(DateTimeFormatter.ofPattern("HHmm"))
     .appendOptional(DateTimeFormatter.ofPattern("H:mm"))
     .appendOptional(DateTimeFormatter.ofPattern("HH:mm"))
+    .appendOptional(DateTimeFormatter.ofPattern("H:m"))
     .toFormatter
 
   def fromText(textMessage: String): BusInfoQuery =
@@ -38,17 +39,33 @@ case object BusInfoQuery {
             extractTimeFromText(rawTime)
               .map(time =>
                 NextBusQuery(
-                  stop = stop,
+                  stop = stop.toInt, //fixme
                   bus = Option(bus).map(_.trim),
                   hour = Option(time)
                 )
               )
               .fold(ex => Malformed(ex), n => n)
-          case stop :: bus :: Nil            => NextBusQuery(stop, Option(bus))
-          case stop :: Nil                   => NextBusQuery(stop)
+          case stop :: bus :: Nil            => NextBusQuery(stop.toInt, Option(bus))
+          case stop :: Nil                   => NextBusQuery(stop.toInt)
           case _                             => Malformed(new IllegalArgumentException(s"cant extract query from '$textMessage'"))
         }
     }
+
+  import fastparse._
+  import MultiLineWhitespace._
+
+  private def number[_: P]: P[Int]       = P(CharIn("0-9").rep(1).!.map(_.toInt))
+  def busStopNameParser[_: P]: P[String] = P(&(" ").flatMap(_ => AnyChar.rep(1).!))
+  private def hour[_: P]: P[LocalTime]   = P(&(" ").flatMap(_ => AnyChar.rep(1).!.map(LocalTime.parse(_, timeFormatter))))
+
+  def parseNextBusQuery[_: P]: P[NextBusQuery] = P(number ~ busStopNameParser.? ~ hour.? ~ End).map {
+    case (stop, bus, time) =>
+      NextBusQuery(
+        stop = stop,
+        bus = bus,
+        hour = time
+      )
+  }
 
   private def tokenize(query: String): List[String] =
     query
@@ -56,10 +73,8 @@ case object BusInfoQuery {
       .toList
       .map(_.trim)
 
-  private def extractTimeFromText(time: String): Either[RuntimeException, LocalTime] =
-    Either
-      .catchNonFatal(LocalTime.parse(time, timeFormatter))
-      .leftMap(ex => new RuntimeException(s"failed to parse hour: $time", ex))
+  private def extractTimeFromText(time: String): Try[LocalTime] =
+    Try(LocalTime.parse(time, timeFormatter))
 
 }
 

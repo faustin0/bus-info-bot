@@ -69,7 +69,7 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       for {
         _        <- registerExpectation
         sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
-        response <- sut.getNextBuses(NextBusQuery("303", Some("28")))
+        response <- sut.getNextBuses(NextBusQuery(303, Some("28")))
       } yield response
     }.asserting {
       case Right(IncomingBuses(_, _, buses)) => assert(buses.nonEmpty)
@@ -115,7 +115,7 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       for {
         _        <- registerExpectation
         sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
-        response <- sut.getNextBuses(NextBusQuery("303", Some("28"), Some(LocalTime.of(16, 30))))
+        response <- sut.getNextBuses(NextBusQuery(303, Some("28"), Some(LocalTime.of(16, 30))))
       } yield response
     }.asserting {
       case Right(IncomingBuses(_, _, buses)) => assert(buses.nonEmpty)
@@ -148,11 +148,11 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       for {
         _        <- registerExpectation
         sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
-        response <- sut.getNextBuses(NextBusQuery("2023"))
+        response <- sut.getNextBuses(NextBusQuery(2023))
       } yield response
     }.asserting {
-      case Left(MissingBusStop()) => succeed
-      case _                      => fail()
+      case Left(MissingBusStop) => succeed
+      case _                    => fail()
     }
   }
 
@@ -182,11 +182,11 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       for {
         _        <- registerExpectation
         sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
-        response <- sut.getNextBuses(NextBusQuery("2022", Some("wrong")))
+        response <- sut.getNextBuses(NextBusQuery(2022, Some("wrong")))
       } yield response
     }.asserting {
-      case Left(BadRequest()) => succeed
-      case _                  => fail()
+      case Left(BadRequest) => succeed
+      case _                => fail()
     }
   }
 
@@ -210,7 +210,7 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       for {
         _        <- registerExpectation
         sut      <- IO(Http4sBusInfoClient(httpClient, Uri.unsafeFromString(container.endpoint)))
-        response <- sut.getNextBuses(NextBusQuery("303", Some("85")))
+        response <- sut.getNextBuses(NextBusQuery(303, Some("85")))
       } yield response
     }.asserting(resp => resp shouldBe Right(NoMoreBus(BusStop(303), Some(Bus("85")))))
   }

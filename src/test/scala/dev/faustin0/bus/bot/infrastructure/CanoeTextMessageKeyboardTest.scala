@@ -24,7 +24,7 @@ class CanoeTextMessageKeyboardTest extends AnyFunSuite with Inside with Matchers
       )
     )
 
-    val actual = msg.toCanoeMessage(NextBusQuery("303", Some("27"), Some(LocalTime.of(23, 0))))
+    val actual = msg.toCanoeMessage(NextBusQuery(303, Some("27"), Some(LocalTime.of(23, 0))))
     //fixme "stop" : "303" should be an int
     inside(actual.keyboard.replyMarkup) { case Some(keyboard) =>
       inside(keyboard) { case InlineKeyboardMarkup(Seq(Seq(button))) =>
@@ -71,4 +71,5 @@ class CanoeTextMessageKeyboardTest extends AnyFunSuite with Inside with Matchers
       }
     }
   }
+
 }

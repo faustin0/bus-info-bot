@@ -10,9 +10,9 @@ final case class Satellite(hour: LocalTime) extends HourOfArrival
 final case class Planned(hour: LocalTime)   extends HourOfArrival
 
 sealed trait FailedRequest        extends Product with Serializable
-final case class GeneralFailure() extends FailedRequest
-final case class BadRequest()     extends FailedRequest
-final case class MissingBusStop() extends FailedRequest
+case object GeneralFailure extends FailedRequest
+case object BadRequest    extends FailedRequest
+case object MissingBusStop extends FailedRequest
 
 sealed trait NextBusResponse extends Product with Serializable {
   def requestedStop: BusStop

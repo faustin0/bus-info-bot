@@ -34,7 +34,7 @@ object Scenarios {
       _        <- response.handleErrorWith { ex =>
                     for {
                       _ <- Scenario.eval(logger.error(ex)(s"Failure for query: '$rawQuery'"))
-                      _ <- Scenario.eval(chat.send(GeneralFailure().toCanoeMessage.body))
+                      _ <- Scenario.eval(chat.send(GeneralFailure.toCanoeMessage.body))
                     } yield ()
                   }
     } yield ()
