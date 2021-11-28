@@ -5,7 +5,7 @@ import cats.effect.{ ContextShift, IO, Resource }
 import cats.implicits._
 import dev.faustin0.bus.bot.domain.{ BusInfoApi, UserRepository }
 import dev.faustin0.bus.bot.infrastructure.{ DynamoUserRepository, Http4sBusInfoClient }
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 
 import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext

@@ -3,7 +3,7 @@ package dev.faustin0.bus.bot.infrastructure
 import cats.effect.{ ContextShift, IO, Resource }
 import dev.faustin0.bus.bot.domain.{ User, UserRepository }
 import dev.faustin0.bus.bot.infrastructure.DynamoUserRepository.{ JavaFutureOps, Table }
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient

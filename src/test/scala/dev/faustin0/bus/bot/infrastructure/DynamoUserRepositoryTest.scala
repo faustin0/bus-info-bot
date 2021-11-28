@@ -4,8 +4,8 @@ import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.{ IO, Resource }
 import com.dimafeng.testcontainers.{ Container, ForAllTestContainer, GenericContainer }
 import dev.faustin0.bus.bot.domain.User
-import io.chrisdavenport.log4cats.Logger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 import org.testcontainers.containers.wait.strategy.Wait
