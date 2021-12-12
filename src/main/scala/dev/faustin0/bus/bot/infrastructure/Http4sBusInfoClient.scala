@@ -8,7 +8,7 @@ import io.circe.generic.semiauto.deriveDecoder
 import org.http4s.Method.GET
 import org.http4s._
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
-import org.http4s.client.blaze.BlazeClientBuilder
+import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client.middleware.{ Logger => ClientLogger }
 import org.http4s.client.{ Client, JavaNetClientBuilder }
 import org.http4s.headers.{ `Content-Type`, Accept }
@@ -27,10 +27,7 @@ class Http4sBusInfoClient(private val client: Client[IO], uri: Uri) extends BusI
       uri = (uri / "bus-stops" / query.stop)
         .withOptionQueryParam("bus", query.bus)
         .withOptionQueryParam("hour", query.hour.map(_.format(dateTimeFormatter))),
-      headers = Headers.of(
-        Accept(MediaType.application.json),
-        `Content-Type`(MediaType.application.json)
-      )
+      headers = Headers(Accept(MediaType.application.json), `Content-Type`(MediaType.application.json))
     )
 
     client.run(req).use { resp =>
@@ -69,9 +66,7 @@ class Http4sBusInfoClient(private val client: Client[IO], uri: Uri) extends BusI
     val req = Request[IO](
       method = GET,
       uri = (uri / "bus-stops").withQueryParam("name", query.stop),
-      headers = Headers.of(
-        Accept(MediaType.application.json)
-      )
+      headers = Headers(Accept(MediaType.application.json))
     )
 
     client.run(req).use { resp =>
