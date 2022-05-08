@@ -11,7 +11,7 @@ object Dependencies {
   val log4catsVersion            = "1.1.1"
   val dynamodbVersion            = "2.17.107"
   val logbackVersion             = "1.2.11"
-  val canoeVersion               = "0.5.1"
+  val canoeVersion               = "0.6.0"
   val fs2Version                 = "2.5.11"
 
   lazy val dependencies = Seq(
@@ -30,7 +30,7 @@ object Dependencies {
   )
 
   lazy val testDependencies = Seq(
-    "org.scalatest"  %% "scalatest"                       % "3.2.12"                    % Test,
+    "org.scalatest"  %% "scalatest"                       % "3.2.12"                   % Test,
     "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-mockserver" % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
@@ -38,4 +38,5 @@ object Dependencies {
     "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.5.4"                    % Test,
     "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
   )
+
 }
