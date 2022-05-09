@@ -15,8 +15,8 @@ import dev.faustin0.bus.bot.domain._
 import dev.faustin0.bus.bot.infrastructure.CanoeMessageAdapter._
 import dev.faustin0.bus.bot.infrastructure.CanoeMessageFormats._
 import fs2.Pipe
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.circe.parser.decode
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 object Scenarios {
   implicit private val logger = Slf4jLogger.getLogger[IO] //todo leave this here ?

@@ -1,7 +1,7 @@
 package dev.faustin0.bus.bot
 
 import cats.effect.testing.scalatest.AsyncIOSpec
-import cats.effect.{ Blocker, IO, Resource }
+import cats.effect.{ IO, Resource }
 import com.dimafeng.testcontainers.{ ForAllTestContainer, MockServerContainer }
 import dev.faustin0.bus.bot.domain._
 import dev.faustin0.bus.bot.infrastructure.Http4sBusInfoClient
@@ -16,14 +16,12 @@ import org.scalatest.matchers.should.Matchers
 import org.testcontainers.containers.wait.strategy.Wait
 
 import java.time.LocalTime
-import scala.util.Right
 
 class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with AsyncIOSpec with Matchers {
 
-  val blocker                = Blocker.liftExecutionContext(executionContext)
-  val httpClient: Client[IO] = JavaNetClientBuilder[IO](blocker).create
+  val httpClient: Client[IO] = JavaNetClientBuilder[IO].create
 
-  override val container: MockServerContainer = MockServerContainer("5.11.2").configure { c =>
+  override val container: MockServerContainer = MockServerContainer("5.13.2").configure { c =>
     c.waitingFor(Wait.forLogMessage(".*started on port:.*", 1))
   }
 

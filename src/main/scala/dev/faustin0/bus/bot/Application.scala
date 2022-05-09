@@ -4,7 +4,7 @@ import canoe.api.Bot
 import cats.effect.{ ExitCode, IO, IOApp }
 import cats.implicits._
 import fs2.Stream
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 object Application extends IOApp {
   implicit val logger = Slf4jLogger.getLogger[IO]

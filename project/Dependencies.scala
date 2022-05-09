@@ -2,17 +2,17 @@ import sbt._
 
 object Dependencies {
 //  val http4sVersion              = "0.21.3"
-  val catsVersion                = "2.5.4"
-  val http4sVersion              = "0.21.33"
-  val testcontainersScalaVersion = "0.39.12"
+  val catsVersion                = "3.3.11"
+  val http4sVersion              = "0.23.11"
+  val testcontainersScalaVersion = "0.40.7"
   val kindProjectorV             = "0.13.2"
   val betterMonadicForV          = "0.3.1"
   val circeVersion               = "0.14.1"
-  val log4catsVersion            = "1.1.1"
-  val dynamodbVersion            = "2.17.107"
+  val log4catsVersion            = "2.3.0"
+  val dynamodbVersion            = "2.17.181"
   val logbackVersion             = "1.2.11"
   val canoeVersion               = "0.6.0"
-  val fs2Version                 = "2.5.11"
+  val fs2Version                 = "3.2.7"
 
   lazy val dependencies = Seq(
     "org.typelevel"         %% "cats-effect"         % catsVersion,
@@ -21,8 +21,7 @@ object Dependencies {
     "org.http4s"            %% "http4s-circe"        % http4sVersion,
     "io.circe"              %% "circe-generic"       % circeVersion,
     "io.circe"              %% "circe-literal"       % circeVersion,
-    "io.chrisdavenport"     %% "log4cats-core"       % log4catsVersion,
-    "io.chrisdavenport"     %% "log4cats-slf4j"      % log4catsVersion,
+    "org.typelevel"         %% "log4cats-slf4j"      % log4catsVersion,
     "software.amazon.awssdk" % "dynamodb"            % dynamodbVersion,
     "org.augustjune"        %% "canoe"               % canoeVersion,
     "co.fs2"                %% "fs2-core"            % fs2Version,
@@ -31,11 +30,10 @@ object Dependencies {
 
   lazy val testDependencies = Seq(
     "org.scalatest"  %% "scalatest"                       % "3.2.12"                   % Test,
-    "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-mockserver" % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
-    "org.mock-server" % "mockserver-client-java"          % "5.11.2"                   % Test,
-    "com.codecommit" %% "cats-effect-testing-scalatest"   % "0.5.4"                    % Test,
+    "org.mock-server" % "mockserver-client-java"          % "5.13.2"                   % Test,
+    "org.typelevel"  %% "cats-effect-testing-scalatest"   % "1.4.0"                    % Test,
     "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
   )
 
