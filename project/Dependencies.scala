@@ -3,16 +3,16 @@ import sbt._
 object Dependencies {
 //  val http4sVersion              = "0.21.3"
   val catsVersion                = "2.5.4"
-  val http4sVersion              = "0.21.31"
+  val http4sVersion              = "0.21.33"
   val testcontainersScalaVersion = "0.39.12"
   val kindProjectorV             = "0.13.2"
   val betterMonadicForV          = "0.3.1"
   val circeVersion               = "0.14.1"
   val log4catsVersion            = "1.1.1"
   val dynamodbVersion            = "2.17.107"
-  val logbackVersion             = "1.2.10"
+  val logbackVersion             = "1.2.11"
   val canoeVersion               = "0.5.1"
-  val fs2Version                 = "2.5.10"
+  val fs2Version                 = "2.5.11"
 
   lazy val dependencies = Seq(
     "org.typelevel"         %% "cats-effect"         % catsVersion,
@@ -30,7 +30,7 @@ object Dependencies {
   )
 
   lazy val testDependencies = Seq(
-    "org.scalatest"  %% "scalatest"                       % "3.2.10"                    % Test,
+    "org.scalatest"  %% "scalatest"                       % "3.2.12"                    % Test,
     "com.dimafeng"   %% "testcontainers-scala-dynalite"   % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-mockserver" % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
