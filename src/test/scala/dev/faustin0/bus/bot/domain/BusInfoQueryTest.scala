@@ -1,11 +1,11 @@
 package dev.faustin0.bus.bot.domain
 
-import java.time.LocalTime
-
 import org.scalatest.Inside
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks._
+
+import java.time.LocalTime
 
 class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
 
@@ -73,4 +73,5 @@ class BusInfoQueryTest extends AnyFunSuite with Inside with Matchers {
     assert(query === expected)
 
   }
+
 }

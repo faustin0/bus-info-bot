@@ -22,7 +22,7 @@ sealed trait NextBusResponse extends Product with Serializable {
 final case class IncomingBuses(
   requestedStop: BusStop,
   requestedBus: Option[Bus],
-  info: List[NextBus] //todo non empty list
+  info: List[NextBus] // todo non empty list
 ) extends NextBusResponse
 
 final case class NoMoreBus(
@@ -64,4 +64,5 @@ object NextBus {
 
   def apply(busStop: BusStop, bus: Bus, hourOfArrival: HourOfArrival, additionalInfo: String): NextBus =
     new NextBus(busStop, bus, hourOfArrival, Option(additionalInfo).filter(_.nonEmpty))
+
 }

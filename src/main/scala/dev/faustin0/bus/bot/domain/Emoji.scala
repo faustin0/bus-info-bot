@@ -1,15 +1,15 @@
 package dev.faustin0.bus.bot.domain
 
 object Emoji {
-  val BUS       = "\uD83D\uDE8C" //🚌
-  val BUS_STOP  = "\uD83D\uDE8F" //🚏
-  val CLOCK     = "\uD83D\uDD50" //🕐
-  val WARN      = "\u26A0"       //⚠
-  val SATELLITE = "\uD83D\uDEF0" //🛰
-  val INFO      = "\u2139"       //ℹ️
-  val POINT     = "\uD83D\uDCCC" //📌
-  val NUM       = "\uD83D\uDD22" //🔢
-  val PENCIL    = "\uD83D\uDCDD" //📝
-  val WAVE      = "\uD83D\uDC4B" //👋
-  val QUESTION  = "❓"            //❓
+  val BUS       = "\uD83D\uDE8C" // 🚌
+  val BUS_STOP  = "\uD83D\uDE8F" // 🚏
+  val CLOCK     = "\uD83D\uDD50" // 🕐
+  val WARN      = "\u26A0"       // ⚠
+  val SATELLITE = "\uD83D\uDEF0" // 🛰
+  val INFO      = "\u2139"       // ℹ️
+  val POINT     = "\uD83D\uDCCC" // 📌
+  val NUM       = "\uD83D\uDD22" // 🔢
+  val PENCIL    = "\uD83D\uDCDD" // 📝
+  val WAVE      = "\uD83D\uDC4B" // 👋
+  val QUESTION  = "❓"            // ❓
 }

@@ -112,4 +112,5 @@ class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer wi
       .use(sut => sut.get(-10))
       .asserting(maybeUser => maybeUser shouldBe None)
   }
+
 }

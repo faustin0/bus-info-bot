@@ -28,4 +28,5 @@ object Application extends IOApp {
         .drain
         .as(ExitCode.Success)
     }
+
 }

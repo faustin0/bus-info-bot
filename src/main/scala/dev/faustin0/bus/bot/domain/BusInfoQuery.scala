@@ -1,16 +1,16 @@
 package dev.faustin0.bus.bot.domain
 
 import cats.implicits._
-import io.circe.{ Decoder, Encoder }
 import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
+import io.circe.{ Decoder, Encoder }
 
 import java.time.LocalTime
 import java.time.format.{ DateTimeFormatter, DateTimeFormatterBuilder }
 
 sealed trait BusInfoQuery extends Product with Serializable
 
-final case class NextBusQuery( //TODO change name
-  stop: String,                //fixme this should be a int
+final case class NextBusQuery( // TODO change name
+  stop: String,                // fixme this should be a int
   bus: Option[String] = None,
   hour: Option[LocalTime] = None
 ) extends BusInfoQuery
@@ -22,7 +22,7 @@ case object BusInfoQuery {
   private val spaces      = " +".r
   private val busStopName = """^([a-zA-Z ]+)$""".r
 
-  //see https://stackoverflow.com/a/45618412
+  // see https://stackoverflow.com/a/45618412
   private val timeFormatter = new DateTimeFormatterBuilder()
     .appendOptional(DateTimeFormatter.ofPattern("HHmm"))
     .appendOptional(DateTimeFormatter.ofPattern("H:mm"))

@@ -2,7 +2,7 @@ package dev.faustin0.bus.bot.infrastructure
 
 import canoe.models.{ InlineKeyboardMarkup, ReplyKeyboardMarkup }
 import dev.faustin0.bus.bot.domain.Codecs.NextBusQueryEncoder
-import dev.faustin0.bus.bot.domain.{ Bus, _ }
+import dev.faustin0.bus.bot.domain._
 import dev.faustin0.bus.bot.infrastructure.CanoeMessageAdapter._
 import dev.faustin0.bus.bot.infrastructure.CanoeMessageFormats._
 import io.circe.literal.JsonStringContext
@@ -25,7 +25,7 @@ class CanoeTextMessageKeyboardTest extends AnyFunSuite with Inside with Matchers
     )
 
     val actual = msg.toCanoeMessage(NextBusQuery("303", Some("27"), Some(LocalTime.of(23, 0))))
-    //fixme "stop" : "303" should be an int
+    // fixme "stop" : "303" should be an int
     inside(actual.keyboard.replyMarkup) { case Some(keyboard) =>
       inside(keyboard) { case InlineKeyboardMarkup(Seq(Seq(button))) =>
         button.text shouldBe "update"
@@ -71,4 +71,5 @@ class CanoeTextMessageKeyboardTest extends AnyFunSuite with Inside with Matchers
       }
     }
   }
+
 }
