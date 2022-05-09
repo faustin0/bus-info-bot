@@ -3,7 +3,7 @@ package dev.faustin0.bus.bot.infrastructure
 import canoe.api.models.Keyboard
 import canoe.models._
 import dev.faustin0.bus.bot.domain.Emoji._
-import dev.faustin0.bus.bot.domain.{ FailedRequest, _ }
+import dev.faustin0.bus.bot.domain._
 
 trait CanoeTextMessage[-M] {
   def body(a: M): String
@@ -32,9 +32,9 @@ object CanoeMessageFormats {
                   |$BUS ${nb.bus.code}
                   |$CLOCK ${nb.hourOfArrival.hour}
                   |${nb.hourOfArrival match {
-                case Satellite(_) => s"$SATELLITE Orario da satellite"
-                case Planned(_)   => s"$WARN Bus con orario previsto"
-              }}""".stripMargin
+                   case Satellite(_) => s"$SATELLITE Orario da satellite"
+                   case Planned(_)   => s"$WARN Bus con orario previsto"
+                 }}""".stripMargin
 
             nb.additionalInfo
               .map(info => s"$INFO $info")
@@ -53,6 +53,7 @@ object CanoeMessageFormats {
       val markup = InlineKeyboardMarkup.singleButton(button)
       Keyboard.Inline(markup)
     }
+
   }
 
   implicit object FailMessage extends CanoeTextMessage[FailedRequest] {
@@ -98,6 +99,7 @@ object CanoeMessageFormats {
 
     private def makeHtmlMapsUrl(detail: BusStopDetails) =
       s"""<a href='https://www.google.com/maps/search/?api=1&query=${detail.position.lat},${detail.position.long}'>${detail.comune}: ${detail.location}</a>"""
+
   }
 
   implicit object WaitingMessage extends CanoeTextMessage[NextBusQuery] {
@@ -165,4 +167,5 @@ object CanoeMessageFormats {
 
     override def keyboard(a: StartResponse, callbackData: String): Keyboard = Keyboard.Unchanged
   }
+
 }

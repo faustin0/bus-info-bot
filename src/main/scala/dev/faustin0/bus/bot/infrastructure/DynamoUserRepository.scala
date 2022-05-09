@@ -64,6 +64,7 @@ class DynamoUserRepository private (private val client: DynamoDbAsyncClient)(imp
     b(builder)
     builder.build()
   }
+
 }
 
 object DynamoUserRepository {
@@ -108,4 +109,5 @@ object DynamoUserRepository {
       })
       .map(DynamoUserRepository(_))
   }
+
 }

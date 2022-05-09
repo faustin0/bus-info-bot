@@ -20,4 +20,5 @@ object User {
       userName = user.username.getOrElse(""),
       language = user.lastName
     )
+
 }

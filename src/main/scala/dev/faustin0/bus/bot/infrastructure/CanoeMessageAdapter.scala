@@ -22,5 +22,7 @@ object CanoeMessageAdapter {
 
     def toCanoeMessage(implicit M: CanoeTextMessage[B]): CanoeMessageData =
       toCanoeMessage(json"{}")
+
   }
+
 }

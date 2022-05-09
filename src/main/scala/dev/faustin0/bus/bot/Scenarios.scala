@@ -19,7 +19,7 @@ import io.circe.parser.decode
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 object Scenarios {
-  implicit private val logger = Slf4jLogger.getLogger[IO] //todo leave this here ?
+  implicit private val logger = Slf4jLogger.getLogger[IO] // todo leave this here ?
 
   def busStopQueries(busInfoClient: BusInfoApi[IO])(implicit tc: TelegramClient[IO]): Scenario[IO, Unit] =
     for {
@@ -115,7 +115,7 @@ object Scenarios {
       _              <- Scenario.eval {
                           for {
                             _ <- waitingMsg.editText(msgData.body)
-                            _ <- msgData.keyboard match { //todo clean up this mess
+                            _ <- msgData.keyboard match { // todo clean up this mess
                                    case Inline(markup) => waitingMsg.editReplyMarkup(Some(markup))
                                    case _              => Monad[F].pure(Left(false))
                                  }
@@ -152,4 +152,5 @@ object Scenarios {
           .handleErrorWith(t => logger.error(t)("update request callback"))
       }
   }
+
 }

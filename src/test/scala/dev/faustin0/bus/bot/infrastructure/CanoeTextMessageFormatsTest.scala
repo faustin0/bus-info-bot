@@ -1,7 +1,7 @@
 package dev.faustin0.bus.bot.infrastructure
 
 import canoe.api.models.Keyboard.Inline
-import dev.faustin0.bus.bot.domain.{ Bus, _ }
+import dev.faustin0.bus.bot.domain._
 import dev.faustin0.bus.bot.infrastructure.CanoeMessageAdapter._
 import dev.faustin0.bus.bot.infrastructure.CanoeMessageFormats._
 import org.scalatest.funsuite.AnyFunSuite
@@ -226,4 +226,5 @@ class CanoeTextMessageFormatsTest extends AnyFunSuite {
           |""".stripMargin
     )
   }
+
 }

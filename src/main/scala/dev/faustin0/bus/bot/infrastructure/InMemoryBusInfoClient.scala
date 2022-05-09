@@ -25,4 +25,5 @@ class InMemoryBusInfoClient[F[_]: Applicative] extends BusInfoApi[F] {
         )
       )
     )
+
 }

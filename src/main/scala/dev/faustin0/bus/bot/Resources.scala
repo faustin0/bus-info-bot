@@ -27,4 +27,5 @@ object Resources {
     busInfoApi: BusInfoApi[IO],
     userRepo: UserRepository[IO]
   )
+
 }

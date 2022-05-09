@@ -41,7 +41,7 @@ class Http4sBusInfoClient(private val client: Client[IO], uri: Uri) extends BusI
               case buses @ List(_, _*) =>
                 IncomingBuses(
                   requestedStop = BusStop(query.stop.toInt),
-                  query.bus.map(Bus), //todo mina su toInt
+                  query.bus.map(Bus), // todo mina su toInt
                   info = buses.map {
                     case BusInfoJson(busStopCode, bus, true, h, i)  =>
                       NextBus(BusStop(busStopCode), Bus(bus), Satellite(h), i)
@@ -51,7 +51,7 @@ class Http4sBusInfoClient(private val client: Client[IO], uri: Uri) extends BusI
                 )
               case _                   =>
                 NoMoreBus(
-                  requestedStop = BusStop(query.stop.toInt), //todo mina su toInt
+                  requestedStop = BusStop(query.stop.toInt), // todo mina su toInt
                   requestedBus = query.bus.map(Bus)
                 )
             }
@@ -129,6 +129,7 @@ private object JsonSchema {
     lat: Float,
     long: Float
   )
+
 }
 
 object Http4sBusInfoClient {
@@ -149,4 +150,5 @@ object Http4sBusInfoClient {
 
     new Http4sBusInfoClient(loggedClient, Uri.unsafeFromString(host))
   }
+
 }
