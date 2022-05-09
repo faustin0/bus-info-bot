@@ -3,7 +3,7 @@ package dev.faustin0.bus.bot.domain
 import canoe.models.{ User => CanoeUser }
 
 case class User(
-  id: Int,
+  id: Long,
   firstName: String,
   lastName: String,
   userName: String,

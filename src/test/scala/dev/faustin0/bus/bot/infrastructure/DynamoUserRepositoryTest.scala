@@ -4,21 +4,24 @@ import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.{ IO, Resource }
 import com.dimafeng.testcontainers.{ Container, ForAllTestContainer, GenericContainer }
 import dev.faustin0.bus.bot.domain.User
-import io.chrisdavenport.log4cats.Logger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers
 import org.testcontainers.containers.wait.strategy.Wait
-import software.amazon.awssdk.auth.credentials.{ StaticCredentialsProvider, _ }
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
+import software.amazon.awssdk.auth.credentials._
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
 import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest.{ Builder => TableBuilder }
 import software.amazon.awssdk.services.dynamodb.model._
 
 import java.net.URI
+import scala.concurrent.ExecutionContext
 
 class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer with AsyncIOSpec with Matchers {
   implicit private val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+
+  override def executionContext: ExecutionContext = ExecutionContext.global
 
   private lazy val dynamoContainer = GenericContainer(
     dockerImage = "amazon/dynamodb-local",
@@ -26,11 +29,11 @@ class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer wi
     command = Seq("-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"),
     waitStrategy = Wait.forLogMessage(".*CorsParams:.*", 1)
   ).configure { provider =>
-    provider.withLogConsumer(t => logger.debug(t.getUtf8String).unsafeRunSync())
+    provider.withLogConsumer(t => logger.info(t.getUtf8String).unsafeRunSync())
     ()
   }
 
-  override def container: Container = dynamoContainer
+  override val container: Container = dynamoContainer
 
   override def afterStart(): Unit =
     createDynamoClient().use { client =>

@@ -1,21 +1,20 @@
 package dev.faustin0.bus.bot.infrastructure
 
-import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, IO, Resource }
-import dev.faustin0.bus.bot.domain.{ NextBusResponse, _ }
+import cats.effect.{ IO, Resource }
+import dev.faustin0.bus.bot.domain._
 import dev.faustin0.bus.bot.infrastructure.JsonSchema.{ BusInfoJson, BusStopDetailsJson }
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import org.http4s.Method.GET
 import org.http4s._
+import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
-import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.client.middleware.{ Logger => ClientLogger }
 import org.http4s.client.{ Client, JavaNetClientBuilder }
 import org.http4s.headers.{ `Content-Type`, Accept }
 
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 
 class Http4sBusInfoClient(private val client: Client[IO], uri: Uri) extends BusInfoApi[IO] {
@@ -27,7 +26,7 @@ class Http4sBusInfoClient(private val client: Client[IO], uri: Uri) extends BusI
       uri = (uri / "bus-stops" / query.stop)
         .withOptionQueryParam("bus", query.bus)
         .withOptionQueryParam("hour", query.hour.map(_.format(dateTimeFormatter))),
-      headers = Headers.of(
+      headers = Headers(
         Accept(MediaType.application.json),
         `Content-Type`(MediaType.application.json)
       )
@@ -69,7 +68,7 @@ class Http4sBusInfoClient(private val client: Client[IO], uri: Uri) extends BusI
     val req = Request[IO](
       method = GET,
       uri = (uri / "bus-stops").withQueryParam("name", query.stop),
-      headers = Headers.of(
+      headers = Headers(
         Accept(MediaType.application.json)
       )
     )
@@ -136,23 +135,16 @@ object Http4sBusInfoClient {
 
   def apply(httpClient: Client[IO], uri: Uri): Http4sBusInfoClient = new Http4sBusInfoClient(httpClient, uri)
 
-  def makeResource(
-    host: String,
-    executionContext: ExecutionContext
-  )(implicit ce: ConcurrentEffect[IO]): Resource[IO, Http4sBusInfoClient] =
-    BlazeClientBuilder[IO](executionContext)
+  def makeResource(host: String): Resource[IO, Http4sBusInfoClient] =
+    BlazeClientBuilder[IO]
       .withConnectTimeout(7 seconds)
       .withRequestTimeout(7 seconds)
       .resource
       .map(client => ClientLogger(logHeaders = true, logBody = true)(client))
       .map(client => Http4sBusInfoClient(client, Uri.unsafeFromString(host)))
 
-  def make(
-    host: String,
-    executionContext: ExecutionContext
-  )(implicit ce: ContextShift[IO]): Http4sBusInfoClient = {
-    val blocker      = Blocker.liftExecutionContext(executionContext)
-    val httpClient   = JavaNetClientBuilder[IO](blocker).create
+  def make(host: String): Http4sBusInfoClient = {
+    val httpClient   = JavaNetClientBuilder[IO].create
     val loggedClient = ClientLogger(logHeaders = false, logBody = true)(httpClient)
 
     new Http4sBusInfoClient(loggedClient, Uri.unsafeFromString(host))
