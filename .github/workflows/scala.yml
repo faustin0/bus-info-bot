@@ -26,7 +26,7 @@ jobs:
         run: sbt assembly
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: bus-info-bot.jar
           path: target/scala-2.13/bus-info-bot.jar
@@ -58,7 +58,7 @@ jobs:
             type=sha
 
       - name: Build container image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.docker_meta.outputs.tags }}
