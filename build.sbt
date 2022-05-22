@@ -4,12 +4,12 @@ import sbtassembly.AssemblyKeys.assembly
 
 inThisBuild(
   List(
-    version := "0.1.0-SNAPSHOT",
-    organization := "dev.faustin0",
-    developers := List(
+    version              := "0.1.0-SNAPSHOT",
+    organization         := "dev.faustin0",
+    developers           := List(
       Developer("faustin0", "Fausto Di Natale", "", url("https://github.com/faustin0"))
     ),
-    homepage := Some(url("https://github.com/faustin0/bus-info-bot")),
+    homepage             := Some(url("https://github.com/faustin0/bus-info-bot")),
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     pomIncludeRepository := { _ => false }
   )
@@ -35,12 +35,12 @@ lazy val root = project
   .in(file("."))
   .settings(
     commonSettings,
-    name := "bus-info-bot",
+    name         := "bus-info-bot",
     fork in Test := true
   )
   .settings(
     assemblySetting,
-    test in assembly := {},
+    test in assembly            := {},
     assemblyJarName in assembly := "bus-info-bot.jar"
   )
 
