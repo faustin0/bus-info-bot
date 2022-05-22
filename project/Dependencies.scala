@@ -7,7 +7,7 @@ object Dependencies {
   val testcontainersScalaVersion = "0.40.7"
   val kindProjectorV             = "0.13.2"
   val betterMonadicForV          = "0.3.1"
-  val circeVersion               = "0.14.1"
+  val circeVersion               = "0.14.2"
   val log4catsVersion            = "2.3.1"
   val dynamodbVersion            = "2.17.181"
   val logbackVersion             = "1.2.11"
