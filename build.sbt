@@ -1,6 +1,4 @@
 import Dependencies._
-import sbt.Keys.test
-import sbtassembly.AssemblyKeys.assembly
 
 inThisBuild(
   List(
@@ -33,20 +31,10 @@ lazy val commonSettings = Seq(
 
 lazy val root = project
   .in(file("."))
+  .enablePlugins(LauncherJarPlugin)
   .settings(
     commonSettings,
-    name         := "bus-info-bot",
-    fork in Test := true
+    name                    := "bus-info-bot",
+    Test / fork             := true,
+    Universal / packageName := "bus-info-bot"
   )
-  .settings(
-    assemblySetting,
-    test in assembly            := {},
-    assemblyJarName in assembly := "bus-info-bot.jar"
-  )
-
-lazy val assemblySetting = assemblyMergeStrategy in assembly := {
-  case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.last
-  case "module-info.class"                                  => MergeStrategy.concat
-  case "mime.types"                                         => MergeStrategy.filterDistinctLines
-  case s                                                    => MergeStrategy.defaultMergeStrategy(s)
-}
