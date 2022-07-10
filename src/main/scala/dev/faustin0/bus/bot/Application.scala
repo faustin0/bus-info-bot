@@ -2,7 +2,7 @@ package dev.faustin0.bus.bot
 
 import canoe.api.Bot
 import cats.effect.{ ExitCode, IO, IOApp }
-import cats.implicits._
+import cats.syntax.all._
 import fs2.Stream
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
