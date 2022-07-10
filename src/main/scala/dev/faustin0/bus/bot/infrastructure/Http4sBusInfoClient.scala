@@ -136,13 +136,13 @@ object Http4sBusInfoClient {
 
   def apply(httpClient: Client[IO], uri: Uri): Http4sBusInfoClient = new Http4sBusInfoClient(httpClient, uri)
 
-  def makeResource(host: String): Resource[IO, Http4sBusInfoClient] =
+  def makeResource(host: Uri): Resource[IO, Http4sBusInfoClient] =
     BlazeClientBuilder[IO]
       .withConnectTimeout(7 seconds)
       .withRequestTimeout(7 seconds)
       .resource
       .map(client => ClientLogger(logHeaders = true, logBody = true)(client))
-      .map(client => Http4sBusInfoClient(client, Uri.unsafeFromString(host)))
+      .map(client => Http4sBusInfoClient(client, host))
 
   def make(host: String): Http4sBusInfoClient = {
     val httpClient   = JavaNetClientBuilder[IO].create

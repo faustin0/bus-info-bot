@@ -8,12 +8,11 @@ import org.typelevel.log4cats.Logger
 
 object Resources {
 
-  private val telegramToken = IO(sys.env("TOKEN"))
-
   def create(implicit logger: Logger[IO]): Resource[IO, Resources] =
     for {
-      telegramClient <- Resource.eval(telegramToken).flatMap(TelegramClient[IO](_))
-      busInfoApi     <- Http4sBusInfoClient.makeResource("http://bus-app.fware.net/")
+      config         <- Resource.eval(Config.load)
+      telegramClient <- TelegramClient[IO](config.telegramToken)
+      busInfoApi     <- Http4sBusInfoClient.makeResource(config.busAppUri)
       userRepo       <- DynamoUserRepository.makeResource
       resources       = Resources(
                           telegramClient,
