@@ -2,10 +2,10 @@ FROM  eed3si9n/sbt:jdk11-alpine AS builder
 
 WORKDIR /code
 COPY . /code
-RUN sbt assembly
+RUN sbt stage
 
 
-FROM openjdk:11-slim
-COPY --from=builder /code/target/scala-**/bus-info-bot.jar app.jar
+FROM openjdk:17-slim
+COPY --from=builder /code/target/universal/stage/ /app
 EXPOSE 80
-ENTRYPOINT ["java","-jar","/app.jar"]
+ENTRYPOINT ["/app/bin/bus-info-bot"]
