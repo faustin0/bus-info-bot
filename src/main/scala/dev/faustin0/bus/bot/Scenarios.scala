@@ -33,7 +33,10 @@ object Scenarios {
                   }
       _        <- response.handleErrorWith { ex =>
                     for {
-                      _ <- Scenario.eval(logger.error(ex)(s"Failure for query: '$rawQuery'"))
+                      _ <-
+                        Scenario.eval(
+                          logger.error(context(rawQuery), ex)(s"Failure for query: '$rawQuery'")
+                        )
                       _ <- Scenario.eval(chat.send(GeneralFailure().toCanoeMessage.body))
                     } yield ()
                   }
@@ -49,7 +52,7 @@ object Scenarios {
   def helpCommandScenario(implicit tc: TelegramClient[IO]): Scenario[IO, Unit] =
     for {
       message <- Scenario.expect(command("help"))
-      _       <- Scenario.eval(logger.info(s"help requested: ${message.from}"))
+      _       <- Scenario.eval(logger.info(context(message))(s"help requested: ${message.from}"))
       _       <- Scenario.eval(
                    message.chat.send(
                      TextContent(HelpResponse.toCanoeMessage.body, parseMode = Some(ParseMode.HTML))
@@ -58,7 +61,7 @@ object Scenarios {
     } yield ()
 
   def startCommandScenario(userRepo: UserRepository[IO])(implicit tc: TelegramClient[IO]): Scenario[IO, Unit] = {
-    val scenario = for {
+    val scenario = for { // todo IO[Either[..]
       message   <- Scenario.expect(command("start"))
       from      <- Scenario.eval(IO.fromOption(message.from)(new IllegalStateException("start command without user")))
       user       = User.fromTelegramUser(from)
@@ -152,5 +155,11 @@ object Scenarios {
           .handleErrorWith(t => logger.error(t)("update request callback"))
       }
   }
+
+  private def context(msg: TelegramMessage): Map[String, String] =
+    Map(
+      "chat"      -> msg.chat.id.show,
+      "messageID" -> msg.messageId.show
+    )
 
 }
