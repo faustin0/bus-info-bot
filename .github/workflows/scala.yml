@@ -31,8 +31,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: bus-info-bot.jar
-          path: target/bus-info-bot.zip
+          name: bus-info-bot.zip
+          path: target/universal/bus-info-bot.zip
           if-no-files-found: error
 
   Build-and-Push-Docker-Image:
