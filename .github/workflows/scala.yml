@@ -20,7 +20,7 @@ jobs:
           distribution: 'adopt'
 
       - name: Scalafmt check
-        run: sbt scalafmtAll
+        run: sbt scalafmtCheck
 
       - name: Run tests
         run: sbt test
