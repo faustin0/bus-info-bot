@@ -17,7 +17,7 @@ object Dependencies {
   lazy val dependencies = Seq(
     "org.typelevel"         %% "cats-effect"         % catsVersion,
     "org.http4s"            %% "http4s-dsl"          % http4sVersion,
-    "org.http4s"            %% "http4s-blaze-client" % http4sVersion,
+    "org.http4s"            %% "http4s-ember-client" % http4sVersion,
     "org.http4s"            %% "http4s-circe"        % http4sVersion,
     "io.circe"              %% "circe-generic"       % circeVersion,
     "io.circe"              %% "circe-literal"       % circeVersion,

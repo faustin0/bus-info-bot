@@ -7,10 +7,10 @@ import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import org.http4s.Method.GET
 import org.http4s._
-import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import org.http4s.client.middleware.{ Logger => ClientLogger }
 import org.http4s.client.{ Client, JavaNetClientBuilder }
+import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.headers.{ `Content-Type`, Accept }
 
 import java.time.LocalTime
@@ -137,10 +137,10 @@ object Http4sBusInfoClient {
   def apply(httpClient: Client[IO], uri: Uri): Http4sBusInfoClient = new Http4sBusInfoClient(httpClient, uri)
 
   def makeResource(host: Uri): Resource[IO, Http4sBusInfoClient] =
-    BlazeClientBuilder[IO]
-      .withConnectTimeout(7 seconds)
-      .withRequestTimeout(7 seconds)
-      .resource
+    EmberClientBuilder
+      .default[IO]
+      .withTimeout(7 seconds)
+      .build
       .map(client => ClientLogger(logHeaders = true, logBody = true)(client))
       .map(client => Http4sBusInfoClient(client, host))
 
