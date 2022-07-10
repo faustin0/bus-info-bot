@@ -13,19 +13,22 @@ object Dependencies {
   val logbackVersion             = "1.2.11"
   val canoeVersion               = "0.6.0"
   val fs2Version                 = "3.2.10"
+  val log4j2Version              = "2.18.0"
 
   lazy val dependencies = Seq(
-    "org.typelevel"         %% "cats-effect"         % catsVersion,
-    "org.http4s"            %% "http4s-dsl"          % http4sVersion,
-    "org.http4s"            %% "http4s-ember-client" % http4sVersion,
-    "org.http4s"            %% "http4s-circe"        % http4sVersion,
-    "io.circe"              %% "circe-generic"       % circeVersion,
-    "io.circe"              %% "circe-literal"       % circeVersion,
-    "org.typelevel"         %% "log4cats-slf4j"      % log4catsVersion,
-    "software.amazon.awssdk" % "dynamodb"            % dynamodbVersion,
-    "org.augustjune"        %% "canoe"               % canoeVersion,
-    "co.fs2"                %% "fs2-core"            % fs2Version,
-    "ch.qos.logback"         % "logback-classic"     % logbackVersion % Runtime
+    "org.typelevel"           %% "cats-effect"                % catsVersion,
+    "org.http4s"              %% "http4s-dsl"                 % http4sVersion,
+    "org.http4s"              %% "http4s-ember-client"        % http4sVersion,
+    "org.http4s"              %% "http4s-circe"               % http4sVersion,
+    "io.circe"                %% "circe-generic"              % circeVersion,
+    "io.circe"                %% "circe-literal"              % circeVersion,
+    "org.typelevel"           %% "log4cats-slf4j"             % log4catsVersion,
+    "software.amazon.awssdk"   % "dynamodb"                   % dynamodbVersion,
+    "org.augustjune"          %% "canoe"                      % canoeVersion,
+    "co.fs2"                  %% "fs2-core"                   % fs2Version,
+    "org.apache.logging.log4j" % "log4j-layout-template-json" % log4j2Version % Runtime,
+    "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
+    "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime
   )
 
   lazy val testDependencies = Seq(
