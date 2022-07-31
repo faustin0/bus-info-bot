@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 //  val http4sVersion              = "0.21.3"
   val catsVersion                = "3.3.14"
-  val http4sVersion              = "0.23.13"
+  val http4sVersion              = "0.23.14"
   val testcontainersScalaVersion = "0.40.10"
   val kindProjectorV             = "0.13.2"
   val betterMonadicForV          = "0.3.1"
