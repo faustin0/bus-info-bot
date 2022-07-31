@@ -12,7 +12,7 @@ object Dependencies {
   val log4catsVersion            = "2.4.0"
   val logbackVersion             = "1.2.11"
   val canoeVersion               = "0.6.0"
-  val fs2Version                 = "3.2.10"
+  val fs2Version                 = "3.2.11"
   val log4j2Version              = "2.18.0"
 
   lazy val dependencies = Seq(
