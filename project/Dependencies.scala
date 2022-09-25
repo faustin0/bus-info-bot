@@ -7,12 +7,12 @@ object Dependencies {
   val testcontainersScalaVersion = "0.40.10"
   val kindProjectorV             = "0.13.2"
   val betterMonadicForV          = "0.3.1"
-  val circeVersion               = "0.14.2"
+  val circeVersion               = "0.14.3"
   val dynamodbVersion            = "2.17.276"
   val log4catsVersion            = "2.5.0"
   val logbackVersion             = "1.2.11"
   val canoeVersion               = "0.6.0"
-  val fs2Version                 = "3.2.14"
+  val fs2Version                 = "3.3.0"
   val log4j2Version              = "2.19.0"
 
   lazy val dependencies = Seq(
