@@ -2,13 +2,13 @@ import sbt._
 
 object Dependencies {
 //  val http4sVersion              = "0.21.3"
-  val catsVersion                = "3.4.6"
+  val catsVersion                = "3.4.7"
   val http4sVersion              = "0.23.18"
   val testcontainersScalaVersion = "0.40.12"
   val kindProjectorV             = "0.13.2"
   val betterMonadicForV          = "0.3.1"
   val circeVersion               = "0.14.3"
-  val dynamodbVersion            = "2.19.33"
+  val dynamodbVersion            = "2.20.7"
   val log4catsVersion            = "2.5.0"
   val logbackVersion             = "1.2.11"
   val canoeVersion               = "0.6.0"
