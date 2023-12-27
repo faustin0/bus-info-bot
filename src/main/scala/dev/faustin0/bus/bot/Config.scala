@@ -14,7 +14,7 @@ object Config {
   def load: IO[Config] =
     (
       IO(sys.env("TOKEN")),
-      Uri.fromString("http://bus-app.fware.net/").liftTo[IO]
+      Uri.fromString("https://bus-app.fware.net/").liftTo[IO]
     )
       .mapN(Config.apply)
 
