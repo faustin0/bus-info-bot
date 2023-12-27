@@ -29,7 +29,7 @@ jobs:
         run: sbt universal:packageBin
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: bus-info-bot.zip
           path: target/universal/bus-info-bot.zip
