@@ -26,7 +26,8 @@ object Application extends IOApp {
         )
         .compile
         .drain
-        .as(ExitCode.Success)
     }
+      .onError(logger.error(_)("App collapsed"))
+      .as(ExitCode.Success)
 
 }
