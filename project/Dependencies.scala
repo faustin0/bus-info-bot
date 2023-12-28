@@ -13,7 +13,7 @@ object Dependencies {
   val logbackVersion             = "1.2.11"
   val canoeVersion               = "0.6.0"
   val fs2Version                 = "3.6.1"
-  val log4j2Version              = "2.22.0"
+  val log4j2Version              = "2.22.1"
 
   lazy val dependencies = Seq(
     "org.typelevel"           %% "cats-effect"                % catsVersion,
@@ -22,10 +22,10 @@ object Dependencies {
     "org.http4s"              %% "http4s-circe"               % http4sVersion,
     "io.circe"                %% "circe-generic"              % circeVersion,
     "io.circe"                %% "circe-literal"              % circeVersion,
-    "org.typelevel"           %% "log4cats-slf4j"             % log4catsVersion,
     "software.amazon.awssdk"   % "dynamodb"                   % dynamodbVersion,
     "org.augustjune"          %% "canoe"                      % canoeVersion,
     "co.fs2"                  %% "fs2-core"                   % fs2Version,
+    "org.typelevel"           %% "log4cats-slf4j"             % log4catsVersion,
     "org.apache.logging.log4j" % "log4j-layout-template-json" % log4j2Version % Runtime,
     "org.apache.logging.log4j" % "log4j-api"                  % log4j2Version % Runtime,
     "org.apache.logging.log4j" % "log4j-slf4j-impl"           % log4j2Version % Runtime
