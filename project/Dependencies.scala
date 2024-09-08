@@ -13,7 +13,7 @@ object Dependencies {
   val logbackVersion             = "1.2.11"
   val canoeVersion               = "0.6.0"
   val fs2Version                 = "3.11.0"
-  val log4j2Version              = "2.23.1"
+  val log4j2Version              = "2.24.0"
 
   lazy val dependencies = Seq(
     "org.typelevel"           %% "cats-effect"                % catsVersion,
