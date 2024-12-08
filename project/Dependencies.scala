@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 //  val http4sVersion              = "0.21.3"
   val catsVersion                = "3.5.7"
-  val http4sVersion              = "0.23.29"
+  val http4sVersion              = "0.23.30"
   val testcontainersScalaVersion = "0.41.4"
   val kindProjectorV             = "0.13.3"
   val betterMonadicForV          = "0.3.1"
@@ -36,7 +36,7 @@ object Dependencies {
     "com.dimafeng"   %% "testcontainers-scala-mockserver" % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
     "org.mock-server" % "mockserver-client-java"          % "5.13.2"                   % Test,
-    "org.typelevel"  %% "cats-effect-testing-scalatest"   % "1.5.0"                    % Test,
+    "org.typelevel"  %% "cats-effect-testing-scalatest"   % "1.6.0"                    % Test,
     "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
   )
 
