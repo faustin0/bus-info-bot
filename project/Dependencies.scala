@@ -35,7 +35,7 @@ object Dependencies {
     "org.scalatest"  %% "scalatest"                       % "3.2.19"                   % Test,
     "com.dimafeng"   %% "testcontainers-scala-mockserver" % testcontainersScalaVersion % Test,
     "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersScalaVersion % Test,
-    "org.mock-server" % "mockserver-client-java"          % "5.13.2"                   % Test,
+    "org.mock-server" % "mockserver-client-java"          % "5.15.0"                   % Test,
     "org.typelevel"  %% "cats-effect-testing-scalatest"   % "1.6.0"                    % Test,
     "org.typelevel"  %% "cats-effect-laws"                % catsVersion                % Test
   )
