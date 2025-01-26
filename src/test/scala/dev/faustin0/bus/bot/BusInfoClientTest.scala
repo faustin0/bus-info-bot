@@ -30,8 +30,7 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       IO(new MockServerClient(container.host, container.container.getServerPort))
     )(client => IO(client.reset()))
 
-  "should retrieve the next buses for a given stop" in {
-
+  "should retrieve the next buses for a given stop" in
     mockServerClient.use { mock =>
       val registerExpectation = IO(
         mock
@@ -73,10 +72,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       case Right(IncomingBuses(_, _, buses)) => assert(buses.nonEmpty)
       case _                                 => fail()
     }
-  }
 
-  "should retrieve the next buses for a given stop and hour" in {
-
+  "should retrieve the next buses for a given stop and hour" in
     mockServerClient.use { mock =>
       val registerExpectation = IO(
         mock
@@ -119,10 +116,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       case Right(IncomingBuses(_, _, buses)) => assert(buses.nonEmpty)
       case _                                 => fail()
     }
-  }
 
-  "should get a MissingBusStop when bus stop does not exist" in {
-
+  "should get a MissingBusStop when bus stop does not exist" in
     mockServerClient.use { mock =>
       val registerExpectation = IO(
         mock
@@ -152,10 +147,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       case Left(MissingBusStop()) => succeed
       case _                      => fail()
     }
-  }
 
-  "should get a BadRequest on malformed request" in {
-
+  "should get a BadRequest on malformed request" in
     mockServerClient.use { mock =>
       val registerExpectation = IO(
         mock
@@ -186,10 +179,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       case Left(BadRequest()) => succeed
       case _                  => fail()
     }
-  }
 
-  "should get an empty NextBusResponse when no more bus for a given stop" in {
-
+  "should get an empty NextBusResponse when no more bus for a given stop" in
     mockServerClient.use { mock =>
       val registerExpectation = IO(
         mock
@@ -211,10 +202,8 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
         response <- sut.getNextBuses(NextBusQuery("303", Some("85")))
       } yield response
     }.asserting(resp => resp shouldBe Right(NoMoreBus(BusStop(303), Some(Bus("85")))))
-  }
 
-  "should search a bus stop by name" in {
-
+  "should search a bus stop by name" in
     mockServerClient.use { mock =>
       val registerExpectation = IO(
         mock
@@ -271,6 +260,5 @@ class BusInfoClientTest extends AsyncFreeSpec with ForAllTestContainer with Asyn
       case Right(BusStopDetailsResponse(Nil))         => fail("expected a list of bus stop")
       case _                                          => fail()
     }
-  }
 
 }
