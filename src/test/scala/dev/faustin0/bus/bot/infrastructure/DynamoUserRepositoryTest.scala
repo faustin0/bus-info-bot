@@ -106,11 +106,10 @@ class DynamoUserRepositoryTest extends AsyncFreeSpec with ForAllTestContainer wi
       .asserting(maybeUser => maybeUser should contain(userToInsert))
   }
 
-  "getting a non existing user should return an empty user" in {
+  "getting a non existing user should return an empty user" in
     createDynamoClient()
       .map(DynamoUserRepository(_))
       .use(sut => sut.get(-10))
       .asserting(maybeUser => maybeUser shouldBe None)
-  }
 
 }
